@@ -1,0 +1,167 @@
+---
+title: "Entity-Relationship Model"
+subtitle: "<br/>You can have data without information, but you cannot have information without data.<br/>- Daniel Keys Moran<br/><br/>"
+block-headings: TRUE
+author: "<br/><br/><br/>Alfa Nugraha Pradana"
+institute: "Prodi Statistika dan Sains Data IPB University"
+footer: "[rpubs.com/alfanugraha/sta1562-p03](https://rpubs.com/alfanugraha/sta1562-p03)&nbsp;&nbsp;&nbsp;"
+format: 
+  revealjs:
+    theme: [default, style.scss]
+    slide-number: c/t
+    code-copy: true
+    # center-title-slide: false
+    code-overflow: wrap
+    highlight-style: a11y
+    height: 1080
+    width: 1920
+    logo: assets/img/LogoIPBUni.png
+    preview-links: auto
+editor: visual
+---
+
+## Outline
+
+<br/>
+
+-   Perancangan Database
+-   Terminologi Database
+-   DB Browser for SQLite
+-   PostgreSQL
+-   Shiny
+-   GitHub fork
+
+# Perancangan Database {background="#43464B"}
+
+## Fase Perancangan Database
+
+<br/>
+
+. . .
+
+::: columns
+::: {.column width="60%"}
+
+::: {.incremental}
+1. **Pengumpulan dan analisis kebutuhan**, [memahami dan mendokumentasikan kebutuhan data bersamaan dengan analisis kebutuhan fungsional]{.fragment} 
+
+2. **Desain konseptual**, [deskripsi singkat dari kebutuhan data pengguna]{.fragment} 
+
+3. **Desain logis (Pemetaan Data dengan Model)**, [implementasi database menggunakan DBMS seperti model relasi (SQL)]{.fragment} 
+
+4. **Desain fisik**, [membangun struktur penyimpanan internal bersama dengan aplikasi database]{.fragment}  
+:::
+
+:::
+
+::: {.column width="40%"}
+![](assets/img/db-phase.png){.absolute right="40"}
+:::
+:::
+
+# Terminologi Database {background="#43464B"}
+
+## Istilah
+
+<br/>
+
+::: {.incremental}
+
+* **Enterprise**: organisasi atau lembaga yang mengelola database. [ex. Universitas, Rumah Sakit]{.fragment} 
+
+* **Entitas**: objek yang akan disimpan dan dapat dibedakan dengan objek lain. [ex. Mahasiswa, Mata Kuliah, Dosen, Fakultas]{.fragment} 
+
+* **Atribut**: unsur pada entitas yang berisi data. [ex. NIM, Nama]{.fragment} 
+
+* **Nilai data**: nilai yang disimpan pada setiap entitas. [ex. Alfa, G1501211013]{.fragment} 
+
+* **Record**: kumpulan unsur data yang saling berkaitan menginformasikan tentang suatu entitas secara lengkap.
+
+* **Key**: penanda unik untuk mengidentifikasi suatu entitas.
+
+:::
+
+
+## Membangun Suatu Entitas
+
+::: columns
+::: {.column width="32%" .fragment}
+```{dot}
+graph Department {
+  layout=neato
+  overlap=false
+  node [shape=box]; DEPARTMENT;
+  node [shape=circle, fixedsize=true, width=0.9] name; number; manager; locations;
+  name -- DEPARTMENT;
+  number -- DEPARTMENT;
+  manager -- DEPARTMENT;
+  locations -- DEPARTMENT;
+}
+```
+:::
+
+::: {.column width="32%" .fragment}
+```{dot}
+graph Employee {
+  layout=neato
+  overlap=false
+  node [shape=box]; EMPLOYEE;
+  node [shape=circle, fixedsize=true, width=0.9] ssn; sex; salary; name; birth_date; address; supervisor; fname; lname;
+  ssn -- EMPLOYEE;
+  sex -- EMPLOYEE;
+  salary -- EMPLOYEE;
+  name -- EMPLOYEE;
+  birth_date -- EMPLOYEE;
+  address -- EMPLOYEE;
+  supervisor -- EMPLOYEE;
+  fname -- name;
+  lname -- name;
+}
+```
+:::
+
+::: {.column width="32%" .fragment}
+```{dot}
+graph Project {
+  layout=neato
+  overlap=false
+  node [shape=box]; PROJECT;
+  node [shape=circle, fixedsize=true, width=0.9] location; number; name;
+  location -- PROJECT;
+  number -- PROJECT;
+  name -- PROJECT;
+}
+```
+:::
+
+:::
+
+## Entity-Relationship Diagram
+
+![](assets/img/pg_erd.png)
+
+# DB Browser for SQLite {background="#43464B"}
+
+## Antarmuka 
+
+![](assets/img/db_browser_sqlite.png)
+
+# PostgreSQL {background="#43464B"}
+
+## Antamuka pgAdmin
+
+![](assets/img/pgadmin.png)
+
+# Shiny {background="#43464B"}
+
+## ShinyApps
+
+![](assets/img/shiny.png)
+
+# GitHub fork {background="#43464B"}
+
+## Fork
+
+> Salinan repositori yang ingin dikelola secara mandiri tanpa harus mengubah kode sumber dari pemilik asal repositori
+
+# Questions? {background="#43464B"}

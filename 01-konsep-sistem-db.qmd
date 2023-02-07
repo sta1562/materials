@@ -1,0 +1,247 @@
+---
+title: "Konsep Sistem Database"
+subtitle: "<br/>We are drowning for data, but starving for knowledge.<br/>- John Naisbitt<br/><br/>"
+block-headings: TRUE
+author: "<br/><br/><br/>Alfa Nugraha Pradana"
+institute: "Prodi Statistika dan Sains Data IPB University"
+footer: "[rpubs.com/alfanugraha/sta1562-p01](https://rpubs.com/alfanugraha/sta1562-p01)&nbsp;&nbsp;&nbsp;"
+format: 
+  revealjs:
+    theme: [default, style.scss]
+    slide-number: c/t
+    code-copy: true
+    # center-title-slide: false
+    code-overflow: wrap
+    highlight-style: a11y
+    height: 1080
+    width: 1920
+    logo: assets/img/LogoIPBUni.png
+    preview-links: auto
+editor: visual
+---
+
+## Outline
+
+<br/>
+
+-   Terminologi 
+
+    * Data
+    * Database
+    * Metadata
+    * Sistem Manajemen Database
+
+-   Data Model
+-   Skema
+-   Instance
+-   Elemen Database
+
+# Terminologi {background="#43464B"}
+
+## Data
+
+<br/>
+
+> Representasi objek dan kejadian yang direkam dalam bentuk angka, huruf, simbol, teks, gambar, video, bunyi, atau kombinasinya
+
+::: {style="text-align: center; margin-top: 1em"}
+[Satu Data Indonesia](https://satudata.go.id/tentang){preview-link="true" style="text-align: center"}
+:::
+
+<!-- <iframe width="80%" height="500" src="https://satudata.go.id/tentang" title="Satu Data Indonesia" /> -->
+
+## Database
+
+<br/>
+
+::: columns
+::: {.column width="60%"}
+> Kumpulan data yang disusun dan saling berelasi serta disimpan dalam media penyimpanan tertentu secara bersama tanpa *redundancy* yang dapat dimanfaatkan kembali dengan cepat dan mudah
+:::
+
+::: {.column width="40%"}
+![](assets/img/db.png){.absolute top="170" right="30"}
+:::
+:::
+
+<!-- source: [binus.ac.id](https://binus.ac.id) -->
+
+## Metadata
+
+<br/>
+
+> Data yang menjelaskan ciri dan konteks data berdasarkan perspektif pengguna
+
+. . .
+
+::: columns
+::: {.column width="60%"}
+::: {style="text-align: center"}
+`iris datasets`
+:::
+
+::: {style="font-size: 0.7em"}
+```{r}
+#| echo: false
+knitr::kable(head(iris))
+```
+:::
+:::
+
+::: {.column width="40%"}
+::: {style="text-align: center"}
+`iris metadata`
+:::
+
+::: {style="font-size: 0.9em"}
+```{r}
+#| echo: false
+metadata <- data.frame(
+  Column=c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width", "Species"), 
+  DataType=c("double", "double", "double", "double", "string"), 
+  Description=c("panjang kelopak bunga", "lebar kelopak bunga", "panjang mahkota bunga", "lebar mahkota bunga", " 3 spesies bunga"))
+knitr::kable(metadata)
+```
+:::
+:::
+:::
+
+. . .
+
+::: {.absolute top="30%" left="8%" width="850"}
+::: {.blackbox style="height: 50px"}
+:::
+:::
+
+::: {.absolute top="30%" left="60%" width="250"}
+::: {.blackbox style="height: 560px"}
+:::
+:::
+
+------------------------------------------------------------------------
+
+## Sistem Manajemen Database
+
+<br/>
+
+> Sistem perangkat lunak yang digunakan untuk membuat, memelihara, mengendalikan, dan menyediakan akses terhadap kepada sumber data dengan cara yang praktis dan efisien
+
+. . .
+
+::: columns
+::: {.column width="60%"}
+Manfaat pendekatan basis data:
+
+-   Kecepatan dan kemudahan
+-   Kebersamaan pemakaian
+-   Pemusatan kontrol data
+-   Efisiensi ruang penyimpanan
+-   Keakuratan
+-   Ketersediaan
+-   Kelengkapan
+-   Keamanan
+-   Kemudahan dalam pembuatan program aplikasi baru
+-   *User view*
+:::
+
+::: {.column width="40%"}
+![](assets/img/data-solutions.png){.absolute top="400" right="30" width="900"}
+:::
+:::
+
+
+# Data Model, Skema, dan Instance {background="#43464B"}
+
+## Data Model
+
+<br/>
+
+> Sekumpulan dari beberapa konsep yang dapat digunakan untuk mendeskripsikan struktur database 
+
+<br/>
+
+
+. . .
+
+Terkadang kata **model** dinotasikan sebagai sebuah deskripsi database secara spesifik, atau ke dalam sebuah skema, sebagai contoh **model data pemasaran** 
+
+<br/>
+
+. . .
+
+Banyak sekali data model yang sudah dikembangkan yang hingga saat ini dikenal dengan 3 kategori:
+
+* High-level atau conceptual data models, menyediakan gambaran nyata yang sesuai dengan cara pandang pengguna
+* Representational atau implementation data models, menyediakan gambaran mudah dipahami pengguna tetapi tidak menghilangkan unsur-unsur teknis yang digunakan pada penyimpanan data
+* Low-level atau physical data models, menggambarkan secara detail bagaimana cara data disimpan pada media penyimpanan
+
+::: aside
+Elmasri, R. Navathe, SB.
+. (2016).
+Fundamental Of Database Systems. 7th Edition.
+Pearson Higher Education.
+:::
+
+## Skema
+
+<br/>
+
+> Pada data model, sangat penting membedakan antara deskripsi database dengan database itu sendiri. Deskripsi dari suatu database disebut **skema database**, yang ditentukan pertama kali saat perancangan database dan tidak diharapkan banyak perubahan yang terjadi di dalamnya.
+
+. . .
+
+Diagram skema dapat digambarkan sebagai berikut
+
+![](assets/img/skema.png)
+
+
+::: aside
+Elmasri, R. Navathe, SB.
+. (2016).
+Fundamental Of Database Systems. 7th Edition.
+Pearson Higher Education.
+:::
+
+## Instance
+
+![](assets/img/skema.png)
+
+<br/>
+
+
+. . . 
+
+Suatu diagram skema hanya menunjukkan beberapa aspek seperti nama dari masing-masing atribut data beserta aturannya, aspek lain terkadang tidak disertakan.  
+
+> Data yang ada di dalam database pada kurun waktu tertentu disebut *database state* atau *snapshot*, kadang lebih dikenal dengan **instance** sebagai gambaran kondisi data saat ini.
+
+
+::: notes
+Sebagai contoh STUDENT akan dibangun pada setiap individu berikut dengan entitasnya, setiap kali ditambah atau menghapus record atau mengubah nilainya maka kita mengubah suatu state database ke state yang lain 
+:::
+
+::: aside
+Elmasri, R. Navathe, SB.
+. (2016).
+Fundamental Of Database Systems. 7th Edition.
+Pearson Higher Education.
+:::
+
+## Elemen Database
+
+<br/>
+
+* **Data model**, menangkap sifat dan hubungan antar data dan digunakan berbagai kategori model saat database dirancang
+<br/>
+
+* **Entitas**, menyusun atribut yang menggambarkan kata benda seperti orang, tempat, objek, kejadian
+
+<br/>
+
+* **Relationships**, penghubung antar entitas, biasanya diilustrasikan dalam bentuk hubungan *one-to-many* atau *many-to-many* 
+
+<br/>
+
+* **Relasional database**, suatu database yang dibangun berdasarkan model relasi antar data
+
+# Terima kasih {background="#43464B"}

@@ -1,0 +1,27 @@
+/*-- scss:defaults --*/
+
+// fonts
+
+/*-- scss:rules --*/
+
+.reveal .subtitle {
+  background: black;
+  color: white;
+  padding: 20px;
+  display: block;
+  position: relative;
+  width: 50%;
+  margin: 5px auto;
+  box-shadow: none;
+  border: 1px solid #C6D7DC;
+  text-align: right;
+}
+
+
+.blackbox {
+  color: #000000;
+  background-color: transparent;
+  margin: 1px;
+  padding: 5px 2px 5px 2px;
+  border: 2px solid;
+}

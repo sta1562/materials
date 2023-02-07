@@ -1,0 +1,169 @@
+---
+title: "Lingkungan dan Pengembangan Database"
+subtitle: "<br/>Torture the data, and it will confess to anything.<br/>- Ronald Coase<br/><br/>"
+block-headings: TRUE
+author: "<br/><br/><br/>Alfa Nugraha Pradana"
+institute: "Prodi Statistika dan Sains Data IPB University"
+footer: "[rpubs.com/alfanugraha/sta1562-p02](https://rpubs.com/alfanugraha/sta1562-p02)&nbsp;&nbsp;&nbsp;"
+format: 
+  revealjs:
+    theme: [default, style.scss]
+    slide-number: c/t
+    code-copy: true
+    # center-title-slide: false
+    code-overflow: wrap
+    highlight-style: a11y
+    height: 1080
+    width: 1920
+    logo: assets/img/LogoIPBUni.png
+    preview-links: auto
+editor: visual
+---
+
+## Outline
+
+<br/>
+
+-   Komponen Lingkungan Database
+-   Code Repository
+
+    * Git
+    * GitHub
+
+-   Integrasi Git, GitHub, dan RStudio
+
+# Komponen Lingkungan Database {background="#43464B"}
+
+## Komponen Lingkungan Database
+
+<br/>
+
+. . .
+
+::: columns
+::: {.column width="60%"}
+-   Tools pemodelan dan perancangan data
+-   Repositori
+-   DBMS
+-   Database
+-   Program aplikasi
+-   Antarmuka pengguna
+-   Administrator data dan database
+-   Sistem pengembang
+-   *End users*
+:::
+
+::: {.column width="40%"}
+![](assets/img/db_env.png){.absolute right="30" width="900"}
+:::
+:::
+
+# Code Repository {background="#43464B"}
+
+## Git 
+
+<br/>
+
+> Git adalah sistem *version control* yang dirancang untuk menangani berbagai projek pengembangan yang kecil hingga kompleks dengan cepat dan efisien
+
+<br/>
+
+Pengembangan Git dimulai pada April 2005, setelah para developer kernel Linux cukup lama menggunakan [BitKeeper](http://www.bitkeeper.org/) sebagai sistem manajemen *source-control* yang bersifat *proprietary*.
+
+<br/>
+
+. . .
+
+Linus Torvalds kemudian berinisiatif mengembangkan sistem yang sama yang dapat digunakan secara bebas, cepat, dukungan yang kuat untuk pengembangan yang tidak linear dan terdistribusi secara penuh. Hingga saat ini Git, telah berevolusi sebagai sistem kendali *source* yang cepat dan mudah digunakan serta sistem *branching* yang menakjubkan.
+
+Nama Git secara sarkas dalam *British English slang* diartikan sebagai, "*unpleasant person*": saya secara bebas dapat menamai semua proyek saya dengan nama saya sendiri. 
+
+::: footer
+Learn more: [Pro Git, 2nd Edition (2014)](https://git-scm.com/book/en/v2)
+:::
+
+## Git in a nutshell
+
+![](assets/img/git-snapshots.png){.absolute top="170" width="900"}
+
+. . .
+
+![](assets/img/git-areas.png){.absolute top="170" right="100"}
+
+::: footer
+Learn more: [What is Git?](https://git-scm.com/book/en/v2/Getting-Started-What-is-Git%3F)
+:::
+
+## GitHub
+
+> GitHub adalah *web hosting* terbesar untuk repositori Git yang banyak digunakan sebagai alat bantu kolaboratif proyek dengan para developer.
+
+<br/>
+
+. . .
+
+Walaupun bukan bagian langsung dari proyek *open-source* Git, namun GitHub telah menjadi bagian Git yang tidak terpisahkan karena manfaatnya sebagai media interaksi yang dapat digunakan secara profesional. 
+
+<br/>
+
+. . .
+
+Akun GitHub dapat dibuat pada alamat berikut [github.com](https://github.com). Integrasi GitHub dengan RStudio memerlukan instalasi Git yang dapat diunduh pada alamat berikut [git-scm.com](https://git-scm.com/).
+
+<br/>
+
+. . .
+
+
+# Integrasi Git, GitHub, dan RStudio {background="#43464B"}
+
+## 1. Pengaturan Git pada RStudio
+
+<br/>
+
+<p style="text-align:center;">
+<img src="assets/img/rstudio-git-setup.gif" alt="Pengaturan Git pada RStudio">
+</p>
+
+## 2. Koneksi akun GitHub pada RStudio
+
+<br/>
+
+Pada tab **Terminal**, ketik perintah berikut untuk konfigurasi nama
+<br/>
+```{{bash}}
+git config --global user.name "FIRST_NAME LAST_NAME"
+```
+
+<br/>
+
+Kemudian, ketik perintah berikut untuk konfigurasi alamat email yang terhubung dengan akun GitHub
+<br/>
+```{{bash}}
+git config --global user.email "MY_NAME@example.com"
+```
+
+. . .
+
+<br/>
+
+Pada saat *clone* repositori, pengguna akan diminta untuk memasukkan password sebagai verifikasi akun yang terhubung agar kemudian dapat melakukan proses manajemen kode yang ada di lokal pengguna dan server GitHub. 
+
+
+## 3. Membuat repositori di GitHub
+
+<br/>
+
+<p style="text-align:center;">
+<img src="assets/img/new-repo.gif" alt="Membuat repositori">
+</p>
+
+## 3. Clone repositori
+
+Proses duplikasi repositori ke lokal tempat dimana kita bekerja yaitu dengan membuat proyek baru pada RStudio dengan *cloning* alamat repositori yang sudah dibuat sebelumnya.
+
+<p style="text-align:center;">
+<img src="assets/img/new-proj.gif" alt="Clone repositori">
+</p>
+
+# Questions? {background="#43464B"}
