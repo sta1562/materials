@@ -1,0 +1,697 @@
+---
+title: "SQL"
+subtitle: "<br/>Every second of every day, our senses bring in way too much data than we can possibly process in our brains.<br/>- Peter Diamandis<br/><br/>"
+block-headings: TRUE
+author: "<br/><br/><br/>Alfa Nugraha Pradana"
+institute: "Prodi Statistika dan Sains Data IPB University"
+footer: "[rpubs.com/alfanugraha/sta1562-p04](https://rpubs.com/alfanugraha/sta1562-p04)&nbsp;&nbsp;&nbsp;"
+format: 
+  revealjs:
+    theme: [default, style.scss]
+    slide-number: c/t
+    code-copy: true
+    # center-title-slide: false
+    code-overflow: wrap
+    highlight-style: a11y
+    height: 1080
+    width: 1920
+    logo: assets/img/LogoIPBUni.png
+    preview-links: auto
+editor: visual
+---
+
+## Outline
+
+<br/>
+
+-   Structured Query Language (SQL)
+
+    -   Definisi data
+    -   Tipe data
+    -   Batasan (constraint)
+    -   Kueri dasar (SELECT)
+    -   Perintah INSERT, DELETE, UPDATE
+
+-   RPostgreSQL
+
+-   ElephantSQL
+
+-   shinyapps.io
+
+# Structured Query Language (SQL) {background="#43464B"}
+
+## SQL
+
+<br/>
+
+> Awalnya SQL disebut SEQUEL (Structured English QUEry Language) yang dirancang dan diimplementasikan oleh IBM Research sebagai prototype sistem database relasional yang dikenal dengan SYSTEM R.
+
+. . .
+
+<br/> 
+
+Sekarang, SQL digunakan sebagai bahasa standard untuk DBMS relasional secara komersial.
+
+. . .
+
+<br/> 
+
+ANSI dan ISO membuat standard SQL pertama dengan nama SQL-86, kemudian berkembang menjadi SQL-92, SQL:1999, SQL:2003, SQL:2006, hingga saat ini SQL:2019 dengan konsep dan teknologi basis data yang mutakhir.
+
+. . .
+
+<br/> 
+
+SQL adalah bahasa database yang komprehensif, memiliki perintah dalam setiap mendefinisikan data, kueri, dan juga update terhadap data tersebut. Selain itu, terdapat juga fasilitas untuk menetapkan keamanan dan otorisasi dalam membuat batasan serta kendali terhadap transaksi data.
+
+## Definisi data SQL
+
+. . .
+
+<br/>
+
+Perintah utama untuk mendefinisikan data adalah `CREATE`.
+
+. . .
+
+<br/> 
+
+```{{sql}}
+CREATE SCHEMA HOSPITAL;
+CREATE TABLE PATIENTS;
+CREATE DOMAIN SSN_TYPE AS CHAR(9);
+CREATE VIEW ...
+CREATE TYPE ...
+```
+
+. . .
+
+<br/> 
+
+Perintah lain pada definisi data yaitu `DROP` dan `ALTER`. 
+
+<br/>
+
+```{{sql}}
+DROP SCHEMA HOSPITAL;
+DROP TABLE PATIENTS;
+ALTER TABLE ROOM OWNER to postgres;
+```
+
+## Tipe data {.scrollable}
+
++-------------------------+----------------------------------------+
+|                         |                                        |
++=========================+========================================+
+| **Numeric**             | - INTEGER/INT/SMALLINT                 |
+|                         | - FLOAT/REAL/DOUBLE PRECISION          |
+|                         | - DECIMAL(i,j)/DEC(i,j)/NUMERIC(i,j)   |
++-------------------------+----------------------------------------+
+| **Character-string**    | - CHAR(n)/CHARACTER(n)                 |
+|                         | - VARCHAR(n)/CHAR VARYING(n)           |
+|                         | - CHARACTER VARYING(n)                 |
++-------------------------+----------------------------------------+
+| **Bit-string**          | - BIT(n)                               |
+|                         | - BIT VARYING(n)                       |
++-------------------------+----------------------------------------+
+| **Boolean**             | TRUE/FALSE/NULL                        |
++-------------------------+----------------------------------------+
+| **Date**                | - YEAR(YYYY)                           |
+|                         | - MONTH(MM)                            |
+|                         | - DAY(DD)                              |
++-------------------------+----------------------------------------+
+| **Time**                | - HOUR(HH)                             |
+|                         | - MINUTE(MM)                           |
+|                         | - SECOND(SS)                           |
++-------------------------+----------------------------------------+
+
+## Domain
+
+<br/>
+
+Suatu domain dapat dideklarasikan dan digunakan sebagai spesifikasi suatu atribut
+
+<br/>
+
+. . .
+
+```{{sql}}
+CREATE DOMAIN SSN_TYPE AS CHAR(9);
+```
+
+<br/>
+
+. . .
+
+```{{sql}}
+ALTER TABLE EMPLOYEE
+MODIFY	Ssn Ssn VARCHAR(9)	NOT NULL;
+```
+
+## Batasan SQL
+
+<br/>
+
+::: {.incremental}
+
+* `NOT NULL`: [nilai data pada suatu atribut tidak boleh kosong]{.fragment} 
+
+* `UNIQUE`: [nilai data pada suatu atribut tidak sama/berulang]{.fragment} 
+
+* `DEFAULT`: [memberi nilai bawaan terhadap data suatu atribut yang kosong]{.fragment} 
+
+* `CHECK`: [memastikan data suatu atribut sesuai aturan yang telah ditentukan]{.fragment} 
+
+* `PRIMARY KEY`: [identitas unik suatu entitas yang nilainya tidak boleh kosong dan berulang]{.fragment} 
+
+* `FOREIGN KEY`: [atribut suatu entitas yang mengacu pada primary key entitas lain]{.fragment} 
+
+:::
+
+
+## Skema Diagram HOSPITAL {.scrollable}
+
+<br/>
+
+```{dot}
+graph Hospital {
+  layout=neato
+  overlap=false
+  fontname="Helvetica,Arial,sans-serif"
+	node [fontname="Helvetica,Arial,sans-serif"]
+	edge [fontname="Helvetica,Arial,sans-serif"]
+  node [shape=box]; PASIEN; KAMAR; DOKTER; 
+  node [shape=ellipse] id_kamar; kelas; ketersediaan; id_pasien; nama_pasien; alamat; umur_pasien; status; tinggi; berat; id_dokter; nama_dokter; umur_dokter; spesialis; upah;  
+  node [shape=diamond,style=filled,color=lightgrey]; UNTUK; TINDAKAN;
+  id_kamar [label = <<u> id_kamar </u>>]
+  id_pasien [label = <<u> id_pasien </u>>]
+  id_dokter [label = <<u> id_dokter </u>>]
+  id_kamar -- KAMAR;
+  kelas -- KAMAR;
+  ketersediaan -- KAMAR;
+  KAMAR -- UNTUK [label="1",len=1.00];
+  UNTUK -- PASIEN [label="1",len=1.00];
+  id_pasien -- PASIEN;
+  nama_pasien -- PASIEN;
+  alamat -- PASIEN;
+  umur_pasien -- PASIEN;
+  status -- PASIEN;
+  tinggi -- PASIEN;
+  berat -- PASIEN;
+  PASIEN -- TINDAKAN [label="n",len=1.00];
+  TINDAKAN -- DOKTER [label="n",len=1.00];
+  id_dokter -- DOKTER;
+  nama_dokter -- DOKTER;
+  umur_dokter -- DOKTER;
+  spesialis -- DOKTER;
+  upah -- DOKTER;
+  
+	fontsize=40;
+}
+```
+
+. . .
+
+<br/>
+
+* *Satu pasien dapat menyewa fasilitas satu kamar, satu kamar dapat disewa dan digunakan oleh satu pasien*
+* *Satu dokter dapat menangani banyak pasien, satu pasien dapat dilakukan tindakan oleh beberapa dokter*
+
+
+## Merancang ERD dan membuat database HOSPITAL {.scrollable}
+
+<br/>
+
+::: columns
+::: {.column width="50%"}
+
+Tabel **kamar**
+
+```{{sql}}
+CREATE TABLE IF NOT EXISTS public.kamar (
+    id_kamar character varying(10) NOT NULL,
+    kelas character varying(20) NOT NULL,
+    ketersediaan character varying(20) NOT NULL,
+    PRIMARY KEY (id_kamar)
+);
+```
+
+<br/>
+
+Tabel **pasien**
+
+```{{sql}}
+CREATE TABLE IF NOT EXISTS public.pasien (
+    id_pasien character varying(20) NOT NULL,
+    nama text NOT NULL,
+    alamat text NOT NULL,
+    umur integer,
+    status character varying(15) NOT NULL,
+    tinggi integer NOT NULL,
+    berat integer NOT NULL,
+    PRIMARY KEY (id_pasien)
+);
+```
+
+<br/>
+
+Tabel **dokter**
+
+```{{sql}}
+CREATE TABLE IF NOT EXISTS public.dokter (
+    id_dokter character varying(20) NOT NULL,
+    nama_dokter text NOT NULL,
+    umur_dokter integer NOT NULL,
+    spesialis character varying(20) NOT NULL,
+    upah integer NOT NULL,
+    PRIMARY KEY (id_dokter)
+);
+```
+
+<br/>
+
+Tabel **kamar_untuk_pasien**
+
+```{{sql}}
+CREATE TABLE IF NOT EXISTS public.kamar_untuk_pasien(
+    id_kamar character varying(10) COLLATE pg_catalog."default" NOT NULL,
+    id_pasien character varying(20) COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT kamar_untuk_pasien_pkey PRIMARY KEY (id_kamar, id_pasien),
+    CONSTRAINT kamar_untuk_pasien_id_kamar_fkey FOREIGN KEY (id_kamar)
+        REFERENCES public.kamar (id_kamar) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT kamar_untuk_pasien_id_pasien_fkey FOREIGN KEY (id_pasien)
+        REFERENCES public.pasien (id_pasien) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+```
+
+<br/>
+
+Tabel **tindakan**
+
+```{{sql}}
+CREATE TABLE IF NOT EXISTS public.tindakan (
+    id_pasien character varying(20) NOT NULL,
+    id_dokter character varying(20) NOT NULL,
+    CONSTRAINT tindakan_pkey PRIMARY KEY (id_pasien, id_dokter),
+    CONSTRAINT tindakan_id_dokter_fkey FOREIGN KEY (id_dokter)
+        REFERENCES public.dokter (id_dokter) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT tindakan_id_pasien_fkey FOREIGN KEY (id_pasien)
+        REFERENCES public.pasien (id_pasien) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+```
+
+
+:::
+::: {.column width="50%"}
+```{mermaid}
+%%| fig-width: 3
+erDiagram
+    KAMAR ||--|{ KAMAR_UNTUK_PASIEN : ditempati
+    KAMAR {
+        int id_kamar PK
+        string kelas
+        string ketersediaan
+    }
+    KAMAR_UNTUK_PASIEN }|--|| PASIEN : menempati
+    KAMAR_UNTUK_PASIEN {
+        int id_kamar FK
+        int id_pasien FK
+    }
+    PASIEN ||--|{ TINDAKAN : dilakukan
+    PASIEN {
+        int id_pasien PK 
+        string nama_pasien
+        int umur_pasien
+        int tinggi
+        int berat
+        string status
+        string alamat
+    }
+    TINDAKAN }|--|| DOKTER : melakukan
+    TINDAKAN {
+        int id_pasien FK
+        int id_dokter FK
+    }
+    DOKTER {
+        int id_dokter PK
+        string nama_dokter
+        string spesialis
+        int umur_dokter
+        int upah
+    }
+```
+:::
+:::
+
+## `INSERT` tuple {.scrollable}
+
+
+<br/>
+
+**dokter**
+
+```{{sql}}
+INSERT INTO dokter
+VALUES  ('DKV1509876','dr. Indah Risma Sp.BTKV ',45,'Kardiovaskular',6500000),
+        ('DOT76896766','dr. Chairuddin Lubis Sp.OT',39,'Ortopedi',5650000),
+        ('DOG5655123','dr. Amelia Rinta Sp.OG',38,'Kandungan',5500000),
+        ('DKV1544569','dr. Wahyu Kusuma Sp.BTKV',49,'Kardiovaskular',7000000),
+        ('DA76884560','dr. Muti Mulia Sp.A',36,'Anak',5300000),
+        ('DU455434456','dr. Dyah Agustina',42,'Umum',5000000),
+        ('DU453323565','dr. Mifthah Farhan',36,'Umum',4800000),
+        ('DS34335980','dr. Ferdy Saragih Sp.S',50,'Saraf',7400000),
+        ('DP00981287','dr. Joko Ahmad Sp.P',54,'Paru-paru',7400000);
+```
+
+<br/>
+
+**pasien**
+
+```{{sql}}
+INSERT INTO pasien
+VALUES  ('ID0989096','Merlin Anindita','Jl. Majapahit No. 9',NULL,'SINGLE',156,53),
+        ('ID7689009','Ilham Mubarok','Jl. Soekarno Hatta No. 21',32,'MENIKAH',168,70),
+        ('ID9870034','Kislam','Jl. Merpati No.9',50,'MENIKAH',165,63),
+        ('ID0966789','Nur Hakim','Jl. Kaliurang km 5',20,'SINGLE',153,65),
+        ('ID1324564','Habibur Rifqi','Jl. Bunda no. 13',6,'SINGLE',135,35),
+        ('ID1267864','Yulisman','Ujung Pandang',52,'MENIKAH',163,70),
+        ('ID1254789','Ibrahim Mika','Jl. Ginting no. 6',4,'SINGLE',126,25),
+        ('ID8764456','Agus Rahman','Jl. Merpati No.28',34,'MENIKAH',157,60),
+        ('ID0987679','Putri Mayani','Jl. Anggur no. 7',28,'MENIKAH',156,55),
+        ('ID0456989','Nur Kartika','Padang Raya No. 6',18,'SINGLE',150,60),
+        ('ID0656554','Auliya Fikri','Jl. Lintas Angkasa No. 2',23,'SINGLE',170,75);
+```
+
+<br/>
+
+**kamar**
+
+```{{sql}}
+INSERT INTO kamar
+VALUES  ('R101','Umum','Tersedia'),
+        ('R102','Umum','Tersedia'),
+        ('R103','Umum','Tersedia'),
+        ('R104','Umum','Tersedia'),
+        ('R201','VIP','Tersedia'),
+        ('R202','VIP','Tersedia'),
+        ('R203','VIP','Tersedia'),
+        ('R204','VIP','Tersedia'),
+        ('R301','VVIP','Tersedia'),
+        ('R302','VVIP','Tersedia'),
+        ('R303','VVIP','Tersedia'),
+        ('R304','VVIP','Tersedia');
+```
+
+<br/>
+
+**kamar_untuk_pasien**
+
+```{{sql}}
+INSERT INTO kamar_untuk_pasien
+VALUES  ('R102','ID0989096'),
+        ('R201','ID7689009'),
+        ('R203','ID0966789'),
+        ('R104','ID1254789'),
+        ('R301','ID8764456'),
+        ('R304','ID0987679'),
+        ('R302','ID1267864');
+```
+
+<br/>
+
+**tindakan**
+
+```{{sql}}
+INSERT INTO tindakan
+VALUES  ('ID0989096','DOT76896766'),
+        ('ID7689009','DKV1509876'),
+        ('ID9870034','DKV1544569'),
+        ('ID0966789','DOT76896766'),
+        ('ID1324564','DA76884560'),
+        ('ID1267864','DS34335980'),
+        ('ID1254789','DA76884560'),
+        ('ID8764456','DKV1544569'),
+        ('ID0987679','DOG5655123'),
+        ('ID0456989','DU453323565'),
+        ('ID0656554','DU455434456');
+```
+
+## Kueri `SELECT` {.scrollable}
+
+Seluruh perintah yang dapat digunakan di dalam PostgreSQL dapat dilihat di Glosarium [PostgreSQL Commands](https://www.postgresql.org/docs/current/sql-commands.html). Secara ringkas dan sering digunakan untuk perintah `SELECT`, dapat dilihat pada tabel di bawah ini 
+
+| Perintah | Keterangan                                                            |
+|------------|------------------------------------------------------------------------|
+| `SELECT`  | Memilih data dari database                             |
+| `FROM`    | Memilih table darimana data diambil   |
+| `WHERE`   | Menyaring kueri dengan mencocokkan suatu kondisi    |
+| `AS`  | Mengubah nama kolom atau tabel dengan suatu alias     |
+| `JOIN` | Menggabungkan baris dari dua atau lebih tabel        |
+| `AND`    | Kombinasi kondisi kueri dengan semua kondisi harus terpenuhi |
+| `OR`    | Kombinasi kondisi kueri dengan salah satu kondisi harus terpenuhi |
+| `LIMIT`    | Membatasi jumlah baris yang ditampilkan |
+| `IN`    | Spesifikasi beberapa nilai ketika menggunakan `WHERE` |
+| `IS NULL`    | Mengembalikan baris dengan nilai `NULL` |
+| `LIKE`    | Mencari pola tertentu di suatu kolom |
+| `GROUP BY`    | Mengelompokkan Data |
+| `ORDER BY`    | Mengurutkan data, secara default menaik (`ASC`), menurun (`DESC`) untuk sebaliknya |
+| `HAVING`    | Serupa dengan perintah `WHERE` tetapi digunakan untuk filter Groups |
+| `COUNT`    | Menghitung jumlah baris |
+| `SUM`    | Menghitung jumlah dari kolom |
+| `AVG`    | Menghitung rata-rata dari kolom |
+| `MIN`    | Menghitung nilai terkecil dari kolom |
+| `MAX`    | Menghitung nilai terbesar dari kolom |
+
+::: footer
+Learn more: [SELECT Commands](https://www.postgresql.org/docs/current/sql-select.html)
+:::
+
+
+## Urutan eksekusi perintah
+
+<br/>
+
+1. `FROM`
+2. `WHERE`
+3. `GROUP BY`
+4. `HAVING`
+5. `SELECT`
+6. `ORDER BY`
+7. `LIMIT`
+
+## DELETE
+
+<br/>
+
+menghapus tuple dari relasi dengan menggunakan tambahan perintah `WHERE`
+
+<br/>
+
+. . .
+
+```{{sql}}
+DELETE FROM   tindakan
+WHERE         id_pasien = 'ID0989096';
+
+
+DELETE FROM   pasien
+WHERE         id_pasien = 'ID0989096';
+
+
+DELETE FROM   dokter
+WHERE         nama_dokter = 'dr. Indah Risma Sp.BTKV ';
+```
+
+
+## UPDATE
+
+<br/>
+
+memodifikasi satu atau lebih nilai atribut terpilih pada suatu tuple dengan juga menggunakan perintah `WHERE` dan `SET` sebagai nilai baru
+
+<br/>
+
+. . .
+
+```{{sql}}
+UPDATE      pasien
+SET         nama_pasien = 'Alfa', tinggi = 173
+WHERE       id_pasien = 'ID0456989'
+
+
+UPDATE      dokter
+SET         nama_dokter = 'dr. Alfa', spesialis = 'Anak'
+WHERE       id_dokter = 'DP00981287'
+
+
+UPDATE      kamar
+SET         ketersediaan = 'Tidak tersedia'
+WHERE       id_kamar = 'R301'
+
+```
+
+
+<br/>
+
+
+# PostgreSQL in R {background="#43464B"}
+
+## RPostgreSQL 
+
+<br/>
+
+. . .
+
+> R Interface to the PostgreSQL Database System
+
+<br/>
+
+. . .
+
+Untuk membangun koneksi ke database di dalam PostgreSQL dapat dilakukan dengan perintah:
+
+<br/>
+
+```{r}
+#| eval: false
+#| echo: true
+library(RPostgreSQL)
+driver <- dbDriver('PostgreSQL')
+DB <- dbConnect(
+  driver, 
+  dbname="rf-mds", 
+  host="localhost",
+  port=5433,
+  user="postgres",
+  password="root"
+)
+```
+
+. . .
+
+<br/>
+
+`CREATE` tabel pada PostgreSQL
+
+<br/>
+
+```{r}
+#| eval: false
+#| echo: true
+dbWriteTable(DB, "tbl_iris", iris, row.names=F)
+dbDisconnect(DB)
+```
+
+
+## Perintah pada RPostgreSQL 
+
+<br/>
+
+```{r}
+#| eval: true
+#| echo: true
+library(RPostgreSQL)
+driver <- dbDriver('PostgreSQL')
+DB <- dbConnect(
+  driver, dbname="employee", host="localhost",port=5433,user="postgres", password="root"
+)
+```
+
+. . .
+
+<br/>
+
+```{r}
+#| eval: true
+#| echo: true
+dbListTables(DB)
+```
+
+. . .
+
+```{r}
+#| eval: true
+#| echo: true
+dbListFields(DB, "department")
+```
+
+. . .
+
+<br/>
+
+```{r}
+#| eval: true
+#| echo: true
+knitr::kable(dbReadTable(DB, "department"))
+dbDisconnect(DB)
+```
+
+
+
+# ElephantSQL {background="#43464B"}
+
+## ElephantSQL {.scrollable}
+
+::: columns
+::: {.column width="60%"}
+
+![](assets/img/elephantsql.png)
+:::
+::: {.column width="40%"}
+
+```{r}
+#| eval: false
+#| echo: true
+con <- dbConnect(
+  dbDriver("PostgreSQL"),
+  dbname = Sys.getenv("ELEPHANT_SQL_DBNAME"),
+  host = Sys.getenv("ELEPHANT_SQL_HOST"),
+  port = 5432,
+  user = Sys.getenv("ELEPHANT_SQL_USER"),
+  password = Sys.getenv("ELEPHANT_SQL_PASSWORD")
+)
+```
+
+:::
+:::
+
+::: footer
+[ElephantSQL](https://www.elephantsql.com/)
+:::
+
+# shinyapps.io {background="#43464B"}
+
+##  {background-iframe="https://www.shinyapps.io/"}
+
+## Tugas Kelompok {background="#43464B"}
+
+::: {style="font-size: 0.7em; text-align: center"}
+1.  Pembagian peran dan task pada masing-masing anggota tim (pembagian tugas di bawah ini tetap membutuhkan kerja sama tim dalam penyelesainnya):
+
+    - **Data Manager**
+        
+        * membuat akun dan berperan sebagai admin pada aplikasi DBMS as a Service (ElephantSQL, self-hosting,     shared-hosting, etc.)
+        * memegang kendali penuh dalam pengelolaan database (CRUD) seefektif mungkin
+        * membuat sintaks SQL (part of **Data Engineer**)
+    
+    - **Shiny Developer**, bertanggung jawab untuk membuat akun, menjadi admin pada     [shinyapps.io](https://www.shinyapps.io), membangun antarmuka dan back-end process Shiny. Anggota tim yang    berjumlah 4 orang dapat dibagi menjadi dua tugas yaitu:
+        
+        * **Front-end ShinyApps**, mengerjakan rancangan layout antarmuka menggunakan Shiny
+        * **Back-end ShinyApps**, membangun perintah yang dapat menghubungkan antara data pada database dan     penyajiannya pada Shiny, role ini akan banyak bekerja sama dengan **Data Manager** 
+    
+    - **Technical Writer**
+        
+        * mendokumentasikan aplikasi database, deskripsi ShinyApps yang dibuat ke dalam Rmd pada situs GitHub     secara lengkap, jelas, dan menyeluruh
+        * membuat skema dan ER diagram
+        * membuat *help guide* dan manual penggunaan ShinyApps
+
+2.  Merancang database minimal empat tabel berelasi. Pertemuan berikutnya masing-masing kelompok diharapkan dapat menunjukkan skema diagram, diagram Entity-Relationship, dan sintaks SQL pada Rmd GitHub masing-masing kelompok untuk direview terlebih dahulu sebelum dimasukkan ke dalam DBMS.
+:::

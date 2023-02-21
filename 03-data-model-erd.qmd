@@ -85,23 +85,8 @@ editor: visual
 ## Membangun Suatu Entitas
 
 ::: columns
-::: {.column width="32%" .fragment}
-```{dot}
-graph Department {
-  layout=neato
-  overlap=false
-  node [shape=box]; DEPARTMENT;
-  node [shape=circle, fixedsize=true, width=0.9] name; number; manager; locations;
-  name -- DEPARTMENT;
-  number -- DEPARTMENT;
-  manager -- DEPARTMENT;
-  locations -- DEPARTMENT;
-}
-```
-:::
-
-::: {.column width="32%" .fragment}
-```{dot}
+::: {.column width="40%"}
+```{{dot}}
 graph Employee {
   layout=neato
   overlap=false
@@ -120,25 +105,112 @@ graph Employee {
 ```
 :::
 
-::: {.column width="32%" .fragment}
+::: {.column width="60%"}
 ```{dot}
-graph Project {
+graph Employee {
   layout=neato
   overlap=false
-  node [shape=box]; PROJECT;
-  node [shape=circle, fixedsize=true, width=0.9] location; number; name;
-  location -- PROJECT;
-  number -- PROJECT;
-  name -- PROJECT;
+  node [shape=box]; EMPLOYEE;
+  node [shape=circle, fixedsize=true, width=0.9] ssn; sex; salary; name; birth_date; address; supervisor; fname; lname;
+  ssn -- EMPLOYEE;
+  sex -- EMPLOYEE;
+  salary -- EMPLOYEE;
+  name -- EMPLOYEE;
+  birth_date -- EMPLOYEE;
+  address -- EMPLOYEE;
+  supervisor -- EMPLOYEE;
+  fname -- name;
+  lname -- name;
 }
 ```
 :::
-
 :::
 
-## Entity-Relationship Diagram
 
-![](assets/img/pg_erd.png)
+::: footer
+Learn more: [Graphviz](https://graphviz.org/documentation)
+:::
+
+## Entity-Relationship Diagram 1
+
+```{{mermaid}}
+%%| echo: true
+%%| fig-width: 4.5
+erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    ORDER ||--|{ LINE-ITEM : contains
+    CUSTOMER }|..|{ DELIVERY-ADDRESS : uses
+```
+```{mermaid}
+%%| fig-width: 4.5
+erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    ORDER ||--|{ LINE-ITEM : contains
+    CUSTOMER }|..|{ DELIVERY-ADDRESS : uses
+```
+
+::: footer
+Learn more: [Mermaid](https://mermaid.js.org/syntax/entityRelationshipDiagram.html)
+:::
+
+## Entity-Relationship Diagram 2
+
+<br/>
+
+::: columns
+::: {.column width="50%"}
+```{{mermaid}}
+%%| echo: true
+%%| fig-width: 3
+erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    CUSTOMER {
+        string name
+        string custNumber
+        string sector
+    }
+    ORDER ||--|{ LINE-ITEM : contains
+    ORDER {
+        int orderNumber
+        string deliveryAddress
+    }
+    LINE-ITEM {
+        string productCode
+        int quantity
+        float pricePerUnit
+    }
+```
+:::
+
+::: {.column width="50%"}
+
+```{mermaid}
+%%| fig-width: 3
+erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    CUSTOMER {
+        string name
+        string custNumber
+        string sector
+    }
+    ORDER ||--|{ LINE-ITEM : contains
+    ORDER {
+        int orderNumber
+        string deliveryAddress
+    }
+    LINE-ITEM {
+        string productCode
+        int quantity
+        float pricePerUnit
+    }
+
+```
+:::
+:::
+
+::: footer
+Learn more: [Mermaid](https://mermaid.js.org/syntax/entityRelationshipDiagram.html)
+:::
 
 # DB Browser for SQLite {background="#43464B"}
 
@@ -146,22 +218,59 @@ graph Project {
 
 ![](assets/img/db_browser_sqlite.png)
 
+::: footer
+Learn more: [SQLite Browser](https://sqlitebrowser.org/)
+:::
+
 # PostgreSQL {background="#43464B"}
 
-## Antamuka pgAdmin
+## Antarmuka pgAdmin
 
 ![](assets/img/pgadmin.png)
 
-# Shiny {background="#43464B"}
+::: footer
+Learn more: [PostgreSQL](https://www.postgresql.org/)
+:::
+
+## ERD in PostgreSQL
+
+Download contoh file SQL untuk PostgreSQL: [Chinook  Database](https://github.com/sta1562/materials/raw/main/assets/sql/chinook_pg.sql)
+
+![](assets/img/pg_erd.png)
+
+::: footer
+Learn more: [pgAdmin](https://www.postgresql.org/ftp/pgadmin/pgadmin4/)
+:::
+
+# Shiny RStudio {background="#43464B"}
 
 ## ShinyApps
 
 ![](assets/img/shiny.png)
+
+::: footer
+Learn more: [Shiny Gallery](https://shiny.rstudio.com/gallery/)
+:::
 
 # GitHub fork {background="#43464B"}
 
 ## Fork
 
 > Salinan repositori yang ingin dikelola secara mandiri tanpa harus mengubah kode sumber dari pemilik asal repositori
+
+<br/>
+
+* Pada GitHub, pilih repositori yang akan dituju
+
+* Pada pojok kanan atas, klik menu **Fork**
+
+* Buat repositori baru yang diinginkan, secara default nama repositori tersebut akan sama dengan asalnya
+
+* Klik **Create fork**
+
+::: footer
+Learn more: [Fork a repo](https://docs.github.com/en/get-started/quickstart/fork-a-repo)
+:::
+
 
 # Questions? {background="#43464B"}

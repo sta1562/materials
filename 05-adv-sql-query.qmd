@@ -1,0 +1,841 @@
+---
+title: "Advanced SQL Query"
+subtitle: "<br/>Theories come and go, but fundamental data always remain the same.<br/>- Mary Leakey<br/><br/>"
+block-headings: TRUE
+author: "<br/><br/><br/>Alfa Nugraha Pradana"
+institute: "Prodi Statistika dan Sains Data IPB University"
+footer: "[rpubs.com/alfanugraha/sta1562-p05](https://rpubs.com/alfanugraha/sta1562-p05)&nbsp;&nbsp;&nbsp;"
+format: 
+  revealjs:
+    theme: [default, style.scss]
+    slide-number: c/t
+    code-copy: true
+    # center-title-slide: false
+    code-overflow: wrap
+    highlight-style: a11y
+    height: 1080
+    width: 1920
+    logo: assets/img/LogoIPBUni.png
+    preview-links: auto
+editor: visual
+---
+
+
+## Kueri SQL Tingkat Lanjut
+
+<br/>
+
+* Operasi pada nilai `NULL`
+* Kueri bersarang (Kueri di dalam kueri)
+* Kueri bersarang yang berkorelasi
+* Fungsi `EXISTS` dan `NOT EXISTS `
+* EXPLICIT SETS
+* Mengubah nama atribut
+* Joined relations 
+
+    * CROSS JOIN, MULTIWAY JOIN, NATURAL JOIN, LEFT JOIN, RIGHT JOIN, dan sebagainya
+
+* Fungsi agregat
+* Pengelompokan
+* Klausa `HAVING` 
+
+## Operasi pada nilai NULL
+
+<br/>
+
+::: {style="font-size: 0.8em;"}
+Menampilkan `nama`, `alamat` dan `umur` dari tabel `pasien` dimana `umur` bernilai `NULL`
+:::
+
+
+```{sql}
+#| eval: false
+#| echo: true
+SELECT nama, alamat, umur
+  FROM pasien
+  WHERE umur IS NULL;
+```
+
+::: {style="font-size: 0.8em;"}
+Menjalankan kueri di atas pada R dapat menggunakan sintaks berikut:
+:::
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-line-numbers: "10|12|14"
+
+# memuat package dan set driver DBMS
+library(RPostgreSQL)
+driver <- dbDriver('PostgreSQL')
+
+# bangun koneksi ke DBMS
+DB <- dbConnect(
+  driver, dbname="hospital", host="localhost",port=5433,user="postgres", password="root"
+)
+# definisikan kueri yang ingin dieksekusi
+q <- "SELECT nama, alamat, umur FROM pasien WHERE umur IS NULL;"
+# request kueri ke DBMS
+rs <- dbSendQuery(DB, q)
+# simpan dan tampilkan hasil  
+dbFetch(rs)
+dbClearResult(rs)
+```
+
+<br/>
+
+. . .
+
+::: {style="font-size: 0.5em; text-align: center; width: 50%; margin-left: auto; margin-right: auto;"}
+```{r}
+library(RPostgreSQL)
+driver <- dbDriver('PostgreSQL')
+DB <- dbConnect(
+  driver, dbname="hospital", host="localhost",port=5433,user="postgres", password="root"
+)
+
+q <- "SELECT nama, alamat, umur FROM pasien WHERE umur IS NULL;"
+rs <- dbSendQuery(DB, q)
+rmarkdown::paged_table(dbFetch(rs))
+```
+:::
+
+```{r}
+#| eval: true
+#| results: hide
+dbClearResult(rs)
+```
+
+
+## Kueri bersarang (kueri di dalam kueri)
+
+> Kueri ini terdiri dari kueri *outer* dan kueri *inner*
+
+<br/>
+
+Menampilkan `kamar` yang ditempati oleh `pasien` yang berobat di poli saraf
+
+```{sql}
+#| eval: false
+#| echo: true
+SELECT id_kamar
+  FROM kamar_untuk_pasien
+  WHERE id_pasien IN (
+    SELECT id_pasien 
+    FROM tindakan
+    WHERE id_dokter IN (
+      SELECT id_dokter 
+      FROM dokter
+      WHERE spesialis='Saraf'
+    )
+  );
+```
+
+<br/>
+
+. . .
+
+::: {style="font-size: 0.5em; text-align: center; width: 50%; margin-left: auto; margin-right: auto;"}
+```{r}
+#| eval: true
+q <- "SELECT id_kamar
+  FROM kamar_untuk_pasien
+  WHERE id_pasien IN (
+    SELECT id_pasien 
+    FROM tindakan
+    WHERE id_dokter IN (
+      SELECT id_dokter 
+      FROM dokter
+      WHERE spesialis='Saraf'
+    )
+  );"
+rs <- dbSendQuery(DB, q)
+rmarkdown::paged_table(dbFetch(rs))
+```
+:::
+
+```{r}
+#| eval: true
+#| results: hide
+dbClearResult(rs)
+```
+
+##
+
+<br/>
+
+Menampilkan `nama_dokter`, `spesialis`, dan `upah` dengan kondisi `umur` di atas 40 tahun dan `upah` > 6500000
+
+```{sql}
+#| eval: false
+#| echo: true
+SELECT nama_dokter, spesialis, upah
+  FROM dokter
+  WHERE upah IN (SELECT upah
+    FROM dokter
+    WHERE umur_dokter > 40
+      AND upah > 6500000);
+```
+
+<br/>
+
+. . .
+
+::: {style="font-size: 0.5em; text-align: center; width: 50%; margin-left: auto; margin-right: auto;"}
+```{r}
+#| eval: true
+q <- "SELECT nama_dokter, spesialis, upah
+  FROM dokter
+  WHERE upah IN (SELECT upah
+    FROM dokter
+    WHERE umur_dokter > 40
+      AND upah > 6500000);"
+rs <- dbSendQuery(DB, q)
+rmarkdown::paged_table(dbFetch(rs))
+```
+:::
+
+```{r}
+#| eval: true
+#| results: hide
+dbClearResult(rs)
+```
+
+## Kueri bersarang yang berkorelasi
+
+> Kondisi dimana klausa `WHERE` pada kueri bersarang berpadanan/mewakili  beberapa atribut dari relasi yang dideklarasikan pada kueri terluarnya (*outer*) sehingga dua kueri ini dikatakan berkorelasi
+
+<br/>
+
+Menampilkan `id_pasien` berikut namanya yang berobat ke poli kardiovaskular
+
+```{sql}
+#| eval: false
+#| echo: true
+SELECT p.id_pasien, p.nama
+  FROM tindakan AS t, dokter AS d, pasien AS p
+  WHERE t.id_dokter	  = d.id_dokter 
+    AND p.id_pasien	  = t.id_pasien
+    AND d.spesialis = 'Kardiovaskular';
+```
+
+<br/>
+
+. . .
+
+::: {style="font-size: 0.5em; text-align: center; width: 50%; margin-left: auto; margin-right: auto;"}
+```{r}
+#| eval: true
+q <- "SELECT p.id_pasien, p.nama
+  FROM tindakan AS t, dokter AS d, pasien AS p
+  WHERE t.id_dokter	  = d.id_dokter 
+    AND p.id_pasien	  = t.id_pasien
+    AND d.spesialis = 'Kardiovaskular';"
+rs <- dbSendQuery(DB, q)
+rmarkdown::paged_table(dbFetch(rs))
+```
+:::
+
+```{r}
+#| eval: true
+#| results: hide
+dbClearResult(rs)
+```
+
+## Fungsi EXISTS dan NOT EXISTS 
+
+<br/>
+
+Menampilkan `id_pasien` dan namanya yang masuk ke instalasi rawat inap dengan kelas `kamar=VVIP`
+
+
+```{sql}
+#| eval: false
+#| echo: true
+SELECT p.id_pasien, p.nama
+  FROM pasien AS p
+  WHERE EXISTS (
+    SELECT * FROM kamar_untuk_pasien AS kp
+      WHERE P.id_pasien=kp.id_pasien AND EXISTS (
+        SELECT * FROM kamar AS k WHERE kp.id_kamar=k.id_kamar AND k.kelas='VVIP'
+      )
+  );
+```
+
+<br/>
+
+. . .
+
+::: {style="font-size: 0.5em; text-align: center; width: 50%; margin-left: auto; margin-right: auto;"}
+```{r}
+#| eval: true
+q <- "SELECT p.id_pasien, p.nama
+  FROM pasien AS p
+  WHERE EXISTS (
+    SELECT * FROM kamar_untuk_pasien AS kp
+      WHERE P.id_pasien=kp.id_pasien AND EXISTS (
+        SELECT * FROM kamar AS k WHERE kp.id_kamar=k.id_kamar AND k.kelas='VVIP'
+      )
+  );"
+rs <- dbSendQuery(DB, q)
+rmarkdown::paged_table(dbFetch(rs))
+```
+:::
+
+```{r}
+#| eval: true
+#| results: hide
+dbClearResult(rs)
+```
+
+##
+
+<br/>
+
+Ruangan yang kosong (belum diisi oleh pasien) yang disajikan dengan `id_kamar` dan `kelas`
+
+
+```{sql}
+#| eval: false
+#| echo: true
+SELECT k.id_kamar, k.kelas
+FROM kamar AS k
+WHERE NOT EXISTS (
+  SELECT * FROM kamar_untuk_pasien AS kp
+    WHERE kp.id_kamar=k.id_kamar
+  );
+```
+
+
+<br/>
+
+. . .
+
+::: {style="font-size: 0.5em; text-align: center; width: 50%; margin-left: auto; margin-right: auto;"}
+```{r}
+#| eval: true
+q <- "SELECT k.id_kamar, k.kelas
+FROM kamar AS k
+WHERE NOT EXISTS (
+  SELECT * FROM kamar_untuk_pasien AS kp
+    WHERE kp.id_kamar=k.id_kamar
+  );"
+rs <- dbSendQuery(DB, q)
+rmarkdown::paged_table(dbFetch(rs))
+```
+:::
+
+```{r}
+#| eval: true
+#| results: hide
+dbClearResult(rs)
+```
+
+
+## EXPLICIT SETS
+
+<br/>
+
+Menampilkan daftar `pasien` yang ditangani oleh `dokter` spesialis saraf dan kardiovaskular
+
+```{sql}
+#| eval: false
+#| echo: true
+SELECT DISTINCT p.id_pasien, p.nama, d.nama_dokter, d.spesialis
+  FROM tindakan AS t, dokter AS d, pasien AS p
+  WHERE t.id_dokter   = d.id_dokter 
+    AND p.id_pasien   = t.id_pasien
+    AND d.spesialis IN ('Kardiovaskular', 'Saraf');
+```
+
+<br/>
+
+. . .
+
+::: {style="font-size: 0.5em; text-align: center; width: 50%; margin-left: auto; margin-right: auto;"}
+```{r}
+#| eval: true
+q <- "SELECT DISTINCT p.id_pasien, p.nama, d.nama_dokter, d.spesialis
+  FROM tindakan AS t, dokter AS d, pasien AS p
+  WHERE t.id_dokter   = d.id_dokter 
+    AND p.id_pasien   = t.id_pasien
+    AND d.spesialis IN ('Kardiovaskular', 'Saraf');"
+rs <- dbSendQuery(DB, q)
+rmarkdown::paged_table(dbFetch(rs))
+```
+:::
+
+```{r}
+#| eval: true
+#| results: hide
+dbClearResult(rs)
+```
+
+## Mengubah nama atribut
+
+<br/>
+
+```{sql}
+#| eval: false
+#| echo: true
+SELECT d.nama_dokter AS "nama praktisi", spesialis AS "spesialisasi kedokteran" 
+  FROM dokter AS d
+  WHERE umur_dokter = 45;
+```
+
+
+<br/>
+
+. . .
+
+::: {style="font-size: 0.5em; text-align: center; width: 50%; margin-left: auto; margin-right: auto;"}
+```{r}
+#| eval: true
+q <- 'SELECT d.nama_dokter AS "nama praktisi", spesialis AS "spesialisasi kedokteran" 
+  FROM dokter AS d
+  WHERE umur_dokter = 45;'
+rs <- dbSendQuery(DB, q)
+rmarkdown::paged_table(dbFetch(rs))
+```
+:::
+
+```{r}
+#| eval: true
+#| results: hide
+dbClearResult(rs)
+```
+
+## Joined relations
+
+<br/>
+
+Mencari `pasien` dan `dokter` yang memiliki usia sama.
+
+```{sql}
+#| eval: false
+#| echo: true
+SELECT * FROM dokter AS d CROSS JOIN pasien AS P
+  WHERE d.umur_dokter = p.umur;
+```
+
+
+<br/>
+
+. . .
+
+::: {style="font-size: 0.5em; text-align: center; width: 50%; margin-left: auto; margin-right: auto;"}
+```{r}
+#| eval: true
+q <- "SELECT * FROM dokter AS d CROSS JOIN pasien AS P
+  WHERE d.umur_dokter = p.umur;"
+rs <- dbSendQuery(DB, q)
+rmarkdown::paged_table(dbFetch(rs))
+```
+:::
+
+```{r}
+#| eval: true
+#| results: hide
+dbClearResult(rs)
+```
+
+## 
+
+<br/>
+
+Menampilkan `nama` dan `usia` pasien yang dirawat di `kamar` VVIP dan berusia > 17.
+
+
+```{sql}
+#| eval: false
+#| echo: true
+SELECT p.nama, p.umur, k.kelas
+  FROM pasien as p, kamar_untuk_pasien as kp, kamar as k
+  WHERE p.id_pasien=kp.id_pasien 
+    AND kp.id_kamar=k.id_kamar 
+    AND k.kelas = 'VVIP' 
+    AND p.umur>17;
+```
+
+
+<br/>
+
+. . .
+
+::: {style="font-size: 0.5em; text-align: center; width: 50%; margin-left: auto; margin-right: auto;"}
+```{r}
+#| eval: true
+q <- "SELECT p.nama, p.umur, k.kelas
+  FROM pasien as p, kamar_untuk_pasien as kp, kamar as k
+  WHERE p.id_pasien=kp.id_pasien 
+    AND kp.id_kamar=k.id_kamar 
+    AND k.kelas = 'VVIP' 
+    AND p.umur>17;"
+rs <- dbSendQuery(DB, q)
+rmarkdown::paged_table(dbFetch(rs))
+```
+:::
+
+```{r}
+#| eval: true
+#| results: hide
+dbClearResult(rs)
+```
+
+## MULTIWAY JOIN
+
+<br/>
+
+```{sql}
+#| eval: false
+#| echo: true
+SELECT p.nama, p.umur
+  FROM (
+    (pasien as p JOIN kamar_untuk_pasien as kp ON p.id_pasien=kp.id_pasien) JOIN kamar as k ON kp.id_kamar=k.id_kamar
+  )
+  WHERE k.kelas = 'VVIP' AND p.umur>17;
+```
+
+<br/>
+
+. . .
+
+::: {style="font-size: 0.5em; text-align: center; width: 50%; margin-left: auto; margin-right: auto;"}
+```{r}
+#| eval: true
+q <- "SELECT p.nama, p.umur
+  FROM (
+    (pasien as p JOIN kamar_untuk_pasien as kp ON p.id_pasien=kp.id_pasien) JOIN kamar as k ON kp.id_kamar=k.id_kamar
+  )
+  WHERE k.kelas = 'VVIP' AND p.umur>17;"
+rs <- dbSendQuery(DB, q)
+rmarkdown::paged_table(dbFetch(rs))
+```
+:::
+
+```{r}
+#| eval: true
+#| results: hide
+dbClearResult(rs)
+```
+
+## NATURAL JOIN 
+
+<br/>
+
+Menampilkan `nama` dan `usia` dari `pasien` anak-anak dibawah 18 tahun dan `id_dokter` yang merawatnya
+
+```{sql}
+#| eval: false
+#| echo: true
+SELECT nama, umur, id_dokter 
+  FROM pasien AS p
+  NATURAL JOIN tindakan WHERE umur < 18;
+```
+
+<br/>
+
+. . .
+
+::: {style="font-size: 0.5em; text-align: center; width: 50%; margin-left: auto; margin-right: auto;"}
+```{r}
+#| eval: true
+q <- "SELECT nama, umur, id_dokter 
+  FROM pasien AS p
+  NATURAL JOIN tindakan WHERE umur < 18;"
+rs <- dbSendQuery(DB, q)
+rmarkdown::paged_table(dbFetch(rs))
+```
+:::
+
+```{r}
+#| eval: true
+#| results: hide
+dbClearResult(rs)
+```
+
+## Fungsi agregat
+
+<br/>
+
+Menampilkan jumlah `dokter`, total `upah`, `upah` tertinggi, `upah` terendah, dan rata-rata `upah` dari `dokter`
+
+
+```{sql}
+#| eval: false
+#| echo: true
+SELECT COUNT(*), 
+       SUM (upah) AS total_upah,
+       MAX (upah) AS upah_tertinggi, 
+       MIN (upah) AS upah_terendah,
+       AVG (upah) AS rataan_upah
+  FROM dokter;
+```
+
+<br/>
+
+. . .
+
+::: {style="font-size: 0.5em; text-align: center; width: 50%; margin-left: auto; margin-right: auto;"}
+```{r}
+#| eval: true
+q <- "SELECT COUNT(*), 
+       SUM (upah) AS total_upah,
+       MAX (upah) AS upah_tertinggi, 
+       MIN (upah) AS upah_terendah,
+       AVG (upah) AS rataan_upah
+  FROM dokter;"
+rs <- dbSendQuery(DB, q)
+rmarkdown::paged_table(dbFetch(rs))
+```
+:::
+
+```{r}
+#| eval: true
+#| results: hide
+dbClearResult(rs)
+```
+
+##
+
+<br/>
+
+Menampilkan `upah` tertinggi, `upah` terendah, dan rataan `upah` dari `dokter` yang jumlah spesialisasinya lebih dari satu
+
+```{sql}
+#| eval: false
+#| echo: true
+SELECT spesialis, 
+    MAX (upah) AS upah_tertinggi, 
+    MIN (upah) AS upah_terendah, 
+    AVG (upah) AS rataan_upah 
+  FROM dokter as d
+  GROUP BY d.spesialis
+  HAVING COUNT(*) > 1;
+```
+
+<br/>
+
+. . .
+
+::: {style="font-size: 0.5em; text-align: center; width: 50%; margin-left: auto; margin-right: auto;"}
+```{r}
+#| eval: true
+q <- "SELECT spesialis, 
+    MAX (upah) AS upah_tertinggi, 
+    MIN (upah) AS upah_terendah, 
+    AVG (upah) AS rataan_upah 
+  FROM dokter as d
+  GROUP BY d.spesialis
+  HAVING COUNT(*)>1;"
+rs <- dbSendQuery(DB, q)
+rmarkdown::paged_table(dbFetch(rs))
+```
+:::
+
+```{r}
+#| eval: true
+#| results: hide
+dbClearResult(rs)
+```
+
+##
+
+<br/>
+
+Mencari `dokter` yang menangani dua atau lebih `pasien`.
+
+```{sql}
+#| eval: false
+#| echo: true
+SELECT nama_dokter
+  FROM dokter
+  WHERE (SELECT COUNT(*) FROM tindakan WHERE tindakan.id_dokter=dokter.id_dokter) >= 2;
+```
+
+<br/>
+
+. . .
+
+::: {style="font-size: 0.5em; text-align: center; width: 50%; margin-left: auto; margin-right: auto;"}
+```{r}
+#| eval: true
+q <- "SELECT nama_dokter
+  FROM dokter
+  WHERE (SELECT COUNT(*) FROM tindakan WHERE tindakan.id_dokter=dokter.id_dokter) >= 2;"
+rs <- dbSendQuery(DB, q)
+rmarkdown::paged_table(dbFetch(rs))
+```
+:::
+
+```{r}
+#| eval: true
+#| results: hide
+dbClearResult(rs)
+```
+
+## Pengelompokan
+
+<br/>
+
+Menghitung total dan rata-rata upah setiap `dokter` spesialis dan mengurutkannya secara menurun
+
+
+```{sql}
+#| eval: false
+#| echo: true
+SELECT spesialis, COUNT(*), AVG(upah)
+  FROM dokter
+  GROUP BY spesialis
+  ORDER BY AVG(upah) DESC;
+```
+
+<br/>
+
+. . .
+
+::: {style="font-size: 0.5em; text-align: center; width: 50%; margin-left: auto; margin-right: auto;"}
+```{r}
+#| eval: true
+q <- "SELECT spesialis, COUNT(*), AVG(upah)
+  FROM dokter
+  GROUP BY spesialis
+  ORDER BY AVG(upah) DESC;"
+rs <- dbSendQuery(DB, q)
+rmarkdown::paged_table(dbFetch(rs))
+```
+:::
+
+```{r}
+#| eval: true
+#| results: hide
+dbClearResult(rs)
+```
+
+## 
+
+<br/>
+
+Menghitung total `pasien` dari pada masing-masing poli
+
+```{sql}
+#| eval: false
+#| echo: true
+SELECT d.spesialis, COUNT(*)
+  FROM dokter as d, tindakan as t
+  WHERE d.id_dokter = t.id_dokter
+  GROUP BY d.spesialis;
+```
+
+<br/>
+
+. . .
+
+::: {style="font-size: 0.5em; text-align: center; width: 50%; margin-left: auto; margin-right: auto;"}
+```{r}
+#| eval: true
+q <- "SELECT d.spesialis, COUNT(*)
+  FROM dokter as d, tindakan as t
+  WHERE d.id_dokter = t.id_dokter
+  GROUP BY d.spesialis;"
+rs <- dbSendQuery(DB, q)
+rmarkdown::paged_table(dbFetch(rs))
+```
+:::
+
+```{r}
+#| eval: true
+#| results: hide
+dbClearResult(rs)
+```
+
+## Klausa `HAVING` 
+
+<br/>
+
+Mencari `dokter` spesialis yang menangani lebih dari satu `pasien` dan diurutkan berdasarkan jumlah `pasien` secara menurun
+
+
+```{sql}
+#| eval: false
+#| echo: true
+SELECT d.spesialis, COUNT(*)
+  FROM dokter as d, tindakan as t
+  WHERE d.id_dokter = t.id_dokter
+  GROUP BY d.spesialis
+  HAVING COUNT(*)>1
+  ORDER BY COUNT(*) DESC;
+```
+
+<br/>
+
+. . .
+
+::: {style="font-size: 0.5em; text-align: center; width: 50%; margin-left: auto; margin-right: auto;"}
+```{r}
+#| eval: true
+q <- "SELECT d.spesialis, COUNT(*)
+  FROM dokter as d, tindakan as t
+  WHERE d.id_dokter = t.id_dokter
+  GROUP BY d.spesialis
+  HAVING COUNT(*)>1
+  ORDER BY COUNT(*) DESC;"
+rs <- dbSendQuery(DB, q)
+rmarkdown::paged_table(dbFetch(rs))
+```
+:::
+
+```{r}
+#| eval: true
+#| results: hide
+dbClearResult(rs)
+```
+
+## 
+
+<br/>
+
+Mencari jumlah pasien berdasarkan poli dimana `pasien` belum memiliki keluarga dan mengurutkannya dari yang paling banyak ke paling sedikit.
+
+
+```{sql}
+#| eval: false
+#| echo: true
+SELECT d.spesialis, COUNT(*)
+  FROM dokter as d, pasien as p, tindakan as t
+  WHERE d.id_dokter = t.id_dokter
+  AND p.id_pasien = t.id_pasien
+  AND p.status = 'SINGLE'
+  GROUP BY d.spesialis
+  HAVING COUNT(*)>1
+  ORDER BY count(*) DESC;
+```
+
+<br/>
+
+. . .
+
+::: {style="font-size: 0.5em; text-align: center; width: 50%; margin-left: auto; margin-right: auto;"}
+```{r}
+#| eval: true
+q <- "SELECT d.spesialis, COUNT(*)
+  FROM dokter as d, pasien as p, tindakan as t
+  WHERE d.id_dokter = t.id_dokter
+  AND p.id_pasien = t.id_pasien
+  AND p.status = 'SINGLE'
+  GROUP BY d.spesialis
+  HAVING COUNT(*)>1
+  ORDER BY count(*) DESC;"
+rs <- dbSendQuery(DB, q)
+rmarkdown::paged_table(dbFetch(rs))
+```
+:::
+
+```{r}
+#| eval: true
+#| results: hide
+dbClearResult(rs)
+dbDisconnect(DB)
+```
+
+# Questions? {background="#43464B"}
