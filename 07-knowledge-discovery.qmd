@@ -1,0 +1,121 @@
+---
+title: "Knowledge Discovery"
+subtitle: "<br/>If you can’t explain it simply, you don’t understand it well enough.<br/>- Albert Einstein<br/><br/>"
+block-headings: TRUE
+author: "<br/><br/><br/>Alfa Nugraha Pradana"
+institute: "Prodi Statistika dan Sains Data IPB University"
+footer: "[rpubs.com/alfanugraha/sta1562-p07](https://rpubs.com/alfanugraha/sta1562-p07)&nbsp;&nbsp;&nbsp;"
+format: 
+  revealjs:
+    theme: [default, style.scss]
+    slide-number: c/t
+    code-copy: true
+    # center-title-slide: false
+    code-overflow: wrap
+    highlight-style: a11y
+    height: 1080
+    width: 1920
+    logo: assets/img/LogoIPBUni.png
+    preview-links: auto
+editor: visual
+---
+
+
+## Studi Kasus  {.scrollable}
+
+<br/>
+
+Data pasien pada Rumah Sakit XYZ:
+
+<br/>
+
+```{dot}
+graph Hospital {
+  layout=neato
+  overlap=false
+  fontname="Helvetica,Arial,sans-serif"
+	node [fontname="Helvetica,Arial,sans-serif"]
+	edge [fontname="Helvetica,Arial,sans-serif"]
+  node [shape=box]; PASIEN; KAMAR; DOKTER; 
+  node [shape=ellipse] id_kamar; kelas; ketersediaan; id_pasien; nama_pasien; alamat; umur_pasien; status; tinggi; berat; id_dokter; nama_dokter; umur_dokter; spesialis; upah;  
+  node [shape=diamond,style=filled,color=lightgrey]; UNTUK; TINDAKAN;
+  id_kamar [label = <<u> id_kamar </u>>]
+  id_pasien [label = <<u> id_pasien </u>>]
+  id_dokter [label = <<u> id_dokter </u>>]
+  id_kamar -- KAMAR;
+  kelas -- KAMAR;
+  ketersediaan -- KAMAR;
+  KAMAR -- UNTUK [label="1",len=1.00];
+  UNTUK -- PASIEN [label="1",len=1.00];
+  id_pasien -- PASIEN;
+  nama_pasien -- PASIEN;
+  alamat -- PASIEN;
+  umur_pasien -- PASIEN;
+  status -- PASIEN;
+  tinggi -- PASIEN;
+  berat -- PASIEN;
+  PASIEN -- TINDAKAN [label="n",len=1.00];
+  TINDAKAN -- DOKTER [label="n",len=1.00];
+  id_dokter -- DOKTER;
+  nama_dokter -- DOKTER;
+  umur_dokter -- DOKTER;
+  spesialis -- DOKTER;
+  upah -- DOKTER;
+  
+	fontsize=40;
+}
+```
+
+<br/>
+
+::: {style="font-size: 0.5em; text-align: center; width: 70%; margin-left: auto; margin-right: auto;"}
+```{r}
+library(RPostgreSQL)
+driver <- dbDriver('PostgreSQL')
+DB <- dbConnect(
+  driver, dbname="hospital", host="localhost",port=5433,user="postgres", password="root"
+)
+
+q <- "SELECT pasien.id_pasien as no_pasien, pasien.nama as Pasien, kamar.id_kamar as Kamar, kamar.kelas as Kelas, dokter.spesialis as Poli, dokter.nama_dokter as Internis, dokter.id_dokter as SIP
+	FROM dokter, kamar, pasien, kamar_untuk_pasien, tindakan
+	WHERE dokter.id_dokter = tindakan.id_dokter
+		AND pasien.id_pasien = tindakan.id_pasien
+		AND kamar.id_kamar = kamar_untuk_pasien.id_kamar;"
+rs <- dbGetQuery(DB, q)
+rmarkdown::paged_table(rs)
+```
+:::
+
+## Sistematika Penilaian Projek MDS-UTS {.scrollable}
+
+<br/>
+
+
++-------------------------+---------------+
+| Kriteria penilaian      | Skor          |
++=========================+===============+
+| **Skema**               | 15            |
++-------------------------+---------------+
+| **ERD**                 | 15            |
++-------------------------+---------------+
+| **SQL**                 | 15            |
++-------------------------+---------------+
+| **Shiny**               | 25            |
++-------------------------+---------------+
+| **Kompleksitas Shiny**  | 15            |
++-------------------------+---------------+
+| **Panduan Aplikasi**    | 10            |
++-------------------------+---------------+
+| **Estetika**            | 5             |
++-------------------------+---------------+
+
+
+<br/>
+
+- Deadline progress shiny (live) **Senin, 13 Maret 2023**
+- Penilaian Akhir **Senin, 27 Maret 2023**
+
+::: footer
+Template akhir: [README.md](https://github.com/sta1562/hospital-is/blob/master/README.md)
+:::
+

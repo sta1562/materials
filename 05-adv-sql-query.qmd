@@ -63,7 +63,7 @@ Menjalankan kueri di atas pada R dapat menggunakan sintaks berikut:
 ```{r}
 #| eval: false
 #| echo: true
-#| code-line-numbers: "10|12|14"
+#| code-line-numbers: "10|12"
 
 # memuat package dan set driver DBMS
 library(RPostgreSQL)
@@ -76,10 +76,7 @@ DB <- dbConnect(
 # definisikan kueri yang ingin dieksekusi
 q <- "SELECT nama, alamat, umur FROM pasien WHERE umur IS NULL;"
 # request kueri ke DBMS
-rs <- dbSendQuery(DB, q)
-# simpan dan tampilkan hasil  
-dbFetch(rs)
-dbClearResult(rs)
+rs <- dbGetQuery(DB, q)
 ```
 
 <br/>
@@ -95,16 +92,10 @@ DB <- dbConnect(
 )
 
 q <- "SELECT nama, alamat, umur FROM pasien WHERE umur IS NULL;"
-rs <- dbSendQuery(DB, q)
-rmarkdown::paged_table(dbFetch(rs))
+rs <- dbGetQuery(DB, q)
+rmarkdown::paged_table(rs)
 ```
 :::
-
-```{r}
-#| eval: true
-#| results: hide
-dbClearResult(rs)
-```
 
 
 ## Kueri bersarang (kueri di dalam kueri)

@@ -100,6 +100,7 @@ ALTER TABLE ROOM OWNER to postgres;
 
 ## Tipe data {.scrollable}
 
+::: {style="font-size: 0.7em;"}
 +-------------------------+----------------------------------------+
 |                         |                                        |
 +=========================+========================================+
@@ -124,6 +125,7 @@ ALTER TABLE ROOM OWNER to postgres;
 |                         | - MINUTE(MM)                           |
 |                         | - SECOND(SS)                           |
 +-------------------------+----------------------------------------+
+:::
 
 ## Domain
 
@@ -448,6 +450,7 @@ VALUES  ('ID0989096','DOT76896766'),
 
 Seluruh perintah yang dapat digunakan di dalam PostgreSQL dapat dilihat di Glosarium [PostgreSQL Commands](https://www.postgresql.org/docs/current/sql-commands.html). Secara ringkas dan sering digunakan untuk perintah `SELECT`, dapat dilihat pada tabel di bawah ini 
 
+::: {style="font-size: 0.7em;"}
 | Perintah | Keterangan                                                            |
 |------------|------------------------------------------------------------------------|
 | `SELECT`  | Memilih data dari database                             |
@@ -469,6 +472,7 @@ Seluruh perintah yang dapat digunakan di dalam PostgreSQL dapat dilihat di Glosa
 | `AVG`    | Menghitung rata-rata dari kolom |
 | `MIN`    | Menghitung nilai terkecil dari kolom |
 | `MAX`    | Menghitung nilai terbesar dari kolom |
+:::
 
 ::: footer
 Learn more: [SELECT Commands](https://www.postgresql.org/docs/current/sql-select.html)

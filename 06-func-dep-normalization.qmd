@@ -1,0 +1,346 @@
+---
+title: "Normalisasi Database"
+subtitle: "<br/>Errors using inadequate data are much less than using no data at all.<br/>- Charles Babbage<br/><br/>"
+block-headings: TRUE
+author: "<br/><br/><br/>Alfa Nugraha Pradana"
+institute: "Prodi Statistika dan Sains Data IPB University"
+footer: "[rpubs.com/alfanugraha/sta1562-p06](https://rpubs.com/alfanugraha/sta1562-p06)&nbsp;&nbsp;&nbsp;"
+format: 
+  revealjs:
+    theme: [default, style.scss]
+    slide-number: c/t
+    code-copy: true
+    # center-title-slide: false
+    code-overflow: wrap
+    highlight-style: a11y
+    height: 1080
+    width: 1920
+    logo: assets/img/LogoIPBUni.png
+    preview-links: auto
+editor: visual
+---
+
+## Outline
+
+<br/>
+
+-   Studi Kasus
+
+-   Normalisasi
+
+    -   Dependensi Fungsional
+    -   1NF, 2NF, 3NF
+
+## Studi Kasus
+
+<br/>
+
+Data pasien pada Rumah Sakit XYZ:
+
+<br/>
+
+::: {style="font-size: 0.5em; text-align: center; width: 70%; margin-left: auto; margin-right: auto;"}
+```{r}
+library(RPostgreSQL)
+driver <- dbDriver('PostgreSQL')
+DB <- dbConnect(
+  driver, dbname="hospital", host="localhost",port=5433,user="postgres", password="root"
+)
+
+q <- "SELECT pasien.id_pasien as no_pasien, pasien.nama as Pasien, kamar.id_kamar as Kamar, kamar.kelas as Kelas, dokter.spesialis as Poli, dokter.nama_dokter as Internis, dokter.id_dokter as SIP
+	FROM dokter, kamar, pasien, kamar_untuk_pasien, tindakan
+	WHERE dokter.id_dokter = tindakan.id_dokter
+		AND pasien.id_pasien = tindakan.id_pasien
+		AND kamar.id_kamar = kamar_untuk_pasien.id_kamar;"
+rs <- dbGetQuery(DB, q)
+rmarkdown::paged_table(rs)
+```
+:::
+
+. . .
+
+<br/>
+
+::: incremental
+-   Kasus 1: *Tambahkan satu internis di poli `Anak`.* [**Insertion anomalies**]{.fragment}
+-   Kasus 2: *Hapus satu kamar `R102`.* [**Deletion anomalies**]{.fragment}
+-   Kasus 3: *Ubah poli `Kandungan` menjadi `Obgyn`.* [**Modification anomalies**]{.fragment}
+:::
+
+# Normalisasi {background="#43464B"}
+
+## Dependensi (Ketergantungan) Fungsional
+
+> Batasan antara dua gugus atribut pada database yang keberadaannya saling bergantung satu sama lain.
+
+. . .
+
+<br/>
+
+Jika diketahui suatu database tunggal dinotasikan dengan skema relasi $R = \{A_1, A_2, ..., A_n\}$ kemudian hubungan dua gugus atribut $X$ dan $Y$ dituliskan $X \rightarrow Y$ sebagai subset dari $R$ dengan bentuk relasi $r(R)$. [Batasan yang ditemui pada *record/tuple* pada $r$ terjadi dimana $t_1[X] = t_2[X]$ memiliki suatu relasi yang seharusnya juga ada pada $t_1[Y] = t_2[Y]$.]{.fragment}
+
+. . .
+
+<br/>
+
+Dependensi fungsional pada tabel `hospital`:
+
+-   `sip` $\rightarrow$ `{internis, poli}`
+-   `no_pasien` $\rightarrow$ `{pasien}`
+-   `{pasien, kamar, poli}` $\rightarrow$ `no_pasien`
+
+## Riwayat
+
+<br/>
+
+Normalisasi database diperkenalkan oleh Codd (1972) dimana serangkaian pengujian dilakukan pada skema diagram untuk menjamin suatu basis data memenuhi bentuk normalnya (*normal form*/**NF**).
+
+[Prosesnya sendiri dilakukan dengan cara mengelompokkan atribut data yang membentuk entitas sederhana, tidak berulang, fleksibel, dan mudah beradaptasi sehingga database yang dibuat memiliki kualitas yang baik.]{.fragment}
+
+. . .
+
+<br/>
+
+Codd mengajukan tiga bentuk yang dikenal dengan **1NF**, **2NF**, dan yang paling kuat yaitu **3NF** atau dikenal dengan sebutan Boyce-Codd Normal Form (**BCNF**).
+
+## First Normal Form (1NF)
+
+> Suatu tabel dikatakan 1NF jika dan hanya jika setiap atribut dari data tersebut hanya memiliki nilai tunggal dalam satu baris
+
+<br/>
+
+::: {style="font-size: 0.5em; text-align: center; width: 70%; margin-left: auto; margin-right: auto;"}
+```{r}
+rmarkdown::paged_table(rs)
+```
+:::
+
+<br/>
+
+1NF tidak memperkenankan adanya duplikasi data, data dengan nilai yang bervariasi, data yang berkelompok, maupun data yang memiliki relasi di dalam relasi.
+
+## Second Normal Form (2NF)
+
+> Syarat 2NF adalah tidak diperkenankan adanya dependensi fungsional secara parsial terhadap PK dalam sebuah tabel
+
+<br/>
+
+::: columns
+::: {.column .fragment width="55%"}
+::: {style="font-size: 0.5em; text-align: center; width: 70%; margin-left: auto; margin-right: auto;"}
+Tabel dokter
+
+```{r}
+q <- "SELECT id_dokter as sip, nama_dokter as internis, spesialis as poli FROM dokter;"
+rs <- dbGetQuery(DB, q)
+rmarkdown::paged_table(rs)
+```
+:::
+:::
+
+::: {.column .fragment width="45%"}
+::: {style="font-size: 0.5em; text-align: center; width: 70%; margin-left: auto; margin-right: auto;"}
+Tabel pasien
+
+```{r}
+q <- "SELECT pasien.id_pasien as no_pasien, pasien.nama as Pasien, kamar.id_kamar as Kamar, kamar.kelas as Kelas
+	FROM kamar, pasien, kamar_untuk_pasien
+	WHERE pasien.id_pasien = kamar_untuk_pasien.id_pasien"
+rs <- dbGetQuery(DB, q)
+rmarkdown::paged_table(rs)
+```
+:::
+:::
+:::
+
+<br/>
+
+. . .
+
+Pada kasus tersebut `sip` (Surat Izin Praktik) hanya bergantung pada `internis` dan `poli` tidak pada atribut lain. Hal sama pada `pasien`, `kamar`, `kelas` yang bergantung pada atribut kunci `no_pasien`.
+
+## Third Normal Form (3NF)
+
+> Pada 3NF tidak diperkenankan adanya dependensi fungsional transitif dalam sebuah tabel
+
+<br/>
+
+::: columns
+::: {.column .fragment width="40%"}
+::: {style="font-size: 0.5em; text-align: center; width: 95%; margin-left: auto; margin-right: auto;"}
+Tabel dokter
+
+```{r}
+q <- "SELECT id_dokter as sip, nama_dokter as internis, spesialis as poli FROM dokter;"
+rs <- dbGetQuery(DB, q)
+rmarkdown::paged_table(rs)
+```
+:::
+:::
+
+::: {.column .fragment width="35%"}
+::: {style="font-size: 0.5em; text-align: center; width: 90%; margin-left: auto; margin-right: auto;"}
+Tabel pasien
+
+```{r}
+q <- "SELECT pasien.id_pasien as no_pasien, pasien.nama as Pasien, kamar.id_kamar as Kamar, kamar.kelas as Kelas
+	FROM kamar, pasien, kamar_untuk_pasien
+	WHERE pasien.id_pasien = kamar_untuk_pasien.id_pasien
+		AND kamar.id_kamar = kamar_untuk_pasien.id_kamar"
+rs <- dbGetQuery(DB, q)
+rmarkdown::paged_table(rs)
+```
+:::
+:::
+
+::: {.column .fragment width="25%"}
+::: {style="font-size: 0.5em; text-align: center; width: 60%; margin-left: auto; margin-right: auto;"}
+Tabel kamar
+
+```{r}
+q <- "SELECT id_kamar as kamar, kelas FROM kamar;"
+rs <- dbGetQuery(DB, q)
+rmarkdown::paged_table(rs)
+```
+:::
+:::
+:::
+
+<br/>
+
+. . .
+
+Sebelumnya, pada tabel pasien atribut `kelas` tidak bergantung langsung pada PK `no_pasien` melainkan pada atribut `kamar` sehingga pada 3NF, atribut tersebut dipisah menjadi suatu tabel baru yaitu tabel **kamar**.
+
+## Fourth Normal Form (4NF) {.scrollable}
+
+<br/>
+
+::: columns
+::: {.column .fragment width="60%"}
+::: {style="font-size: 0.5em; text-align: center; margin-left: auto; margin-right: auto;"}
+Tabel pasien
+
+```{r}
+rs <- dbReadTable(DB, 'pasien')
+rmarkdown::paged_table(rs)
+```
+:::
+:::
+
+::: {.column .fragment width="40%"}
+::: {style="font-size: 0.5em; text-align: center; width: 70%; margin-left: auto; margin-right: auto;"}
+Tabel tindakan
+
+```{r}
+rs <- dbReadTable(DB, 'tindakan')
+rmarkdown::paged_table(rs)
+```
+:::
+:::
+:::
+
+<br/>
+
+::: columns
+::: {.column .fragment width="53%"}
+::: {style="font-size: 0.5em; text-align: center; margin-left: auto; margin-right: auto;"}
+Tabel dokter
+
+```{r}
+rs <- dbReadTable(DB, 'dokter')
+rmarkdown::paged_table(rs)
+```
+:::
+:::
+
+::: {.column .fragment width="24%"}
+::: {style="font-size: 0.5em; text-align: center; width: 80%; margin-left: auto; margin-right: auto;"}
+Tabel kamar_untuk_pasien
+
+```{r}
+rs <- dbReadTable(DB, 'kamar_untuk_pasien')
+rmarkdown::paged_table(rs)
+```
+:::
+:::
+
+::: {.column .fragment width="23%"}
+::: {style="font-size: 0.5em; text-align: center; margin-left: auto; margin-right: auto;"}
+Tabel kamar
+
+```{r}
+rs <- dbReadTable(DB, 'kamar')
+rmarkdown::paged_table(rs)
+```
+
+```{r}
+#| eval: true
+#| results: hide
+dbDisconnect(DB)
+```
+:::
+:::
+:::
+
+
+## ElephantSQL {.scrollable}
+
+<br/>
+
+::: columns
+::: {.column width="60%"}
+
+![](assets/img/esql_details.png)
+:::
+::: {.column width="40%"}
+
+```{r}
+#| eval: false
+#| echo: true
+DB <- dbConnect(
+  driver,
+  dbname="", # User & Default database
+  host="topsy.db.elephantsql.com", # Server
+  # port=5433,
+  user="", # User & Default database
+  password="" # Password
+)
+```
+
+<br/>
+
+::: {style="font-size: 0.6em;"}
+Proses input data dapat dilakukan dengan dua cara, pertama:
+::: 
+```{r}
+#| eval: false
+#| echo: true
+tbl_pasien <- dbReadTable(DB, 'pasien')
+dbWriteTable(DB, 'pasien', tbl_pasien,
+             overwrite=T, row.names=F)
+```
+
+<br/>
+
+::: {style="font-size: 0.6em;"}
+dan kedua:
+::: 
+
+![](assets/img/esql_browser.png)
+
+:::
+:::
+
+::: footer
+[ElephantSQL API](https://api.elephantsql.com/)
+:::
+
+
+## shinyapps.io 
+
+<br/>
+
+![](assets/img/shinyappsio.png)
+
+# Questions? {background="#43464B"}
