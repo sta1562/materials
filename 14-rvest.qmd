@@ -1,0 +1,414 @@
+---
+title: "`rvest`:<br>Web Scraping 101"
+block-headings: TRUE
+author: "<br/><br/><br/>Alfa Nugraha Pradana"
+institute: "Prodi Statistika dan Sains Data IPB University"
+footer: "[rpubs.com/alfanugraha/sta1562-p14](https://rpubs.com/alfanugraha/sta1562-p14)&nbsp;&nbsp;&nbsp;"
+format: 
+  revealjs:
+    theme: [default, style.scss]
+    slide-number: c/t
+    code-copy: true
+    # center-title-slide: false
+    code-overflow: wrap
+    highlight-style: a11y
+    height: 1080
+    width: 1920
+    logo: assets/img/LogoIPBUni.png
+    preview-links: auto
+editor: source
+---
+
+
+## Outline
+
+<br/>
+
+- HTML
+- CSS Selector
+- Ekstraksi Data
+- Atribut
+- Tabel
+- GitHub Actions
+- YAML
+
+
+## HTML
+
+> singkatan dari HyperText Markup Language
+
+<br>
+
+```{{html}}
+<html>
+<head>
+  <title>Page title</title>
+</head>
+<body>
+  <h1 id='first'>A heading</h1>
+  <p>Some text &amp; <b>some bold text.</b></p>
+  <img src='myimg.png' width='100' height='100'>
+</body>
+```
+
+<br>
+
+. . .
+
+HTML memiliki struktur hirarki yang dengan disusun oleh berbagai macam **elemen** yang diawali dengan:
+
+* tag pembuka (`<tag>`),
+* atribut (`id="first"`), 
+* diakhir dengan tag penutup (`</tag>`), 
+* dan konten yang diisi di antara tag pembuka dan penutup
+
+## Membaca HTML dengan `rvest`
+
+<br>
+
+Scraping proses diawal dengan `read_html()`. Nilai kembalian dari perintah tersebut adalah objek dalam bentuk dokumen XML yang nanti akan dimanipulasi dengan fungsi pada `rvest`
+
+```{r}
+#| eval: true
+#| echo: true
+library(rvest)
+library(dplyr)
+html <- read_html("http://rvest.tidyverse.org/")
+class(html)
+```
+
+<br>
+
+`rvest` juga menyediakan fungsi untuk membuat dokumen XML dari suatu HTML
+
+```{r}
+#| eval: true
+#| echo: true
+html <- minimal_html("
+  <p>This is a paragraph<p>
+  <ul>
+    <li>This is a bulleted list</li>
+  </ul>
+")
+html 
+```
+
+## Selektor CSS 
+
+> CSS adalah singkatan dari Cascading Style Sheets yang digunakan sebagai alat untuk mendefinisikan tampilan visual pada dokumen HTML
+
+CSS menyediakan bahasa miniatur untuk memilih elemen pada suatu halaman web yang dikenal dengan istilah CSS selectors. Selektor ini bisa saja kompleks tetapi akan digunakan secara sederhana pada `rvest`. Empat hal penting pada selektor:
+
+. . .
+
+* `p`: memilih semua elemen tag `<p>`
+* `.title`: memilih semua elemen dengan *class* `title`
+* `p.special`: memilih semua elemen tag `<p>` dengan *class* `special`
+* `#title`: memilih elemen dengan atribut `id` yang berisi `title`. Atribut `id` harus unik di dalam suatu dokumen HTML, sehingga hanya akan ada satu elemen yang terpilih
+
+
+
+
+::: footer
+[CSS Dinner](https://flukeout.github.io/)
+:::
+
+##
+
+```{r}
+#| eval: true
+#| echo: true
+html <- minimal_html("
+  <h1>This is a heading</h1>
+  <p id='first'>This is a paragraph</p>
+  <p class='important'>This is an important paragraph</p>
+")
+```
+
+```{r}
+#| eval: true
+#| echo: true
+html %>% html_element("h1")
+```
+
+<br>
+
+```{r}
+#| eval: true
+#| echo: true
+html %>% html_elements("p")
+```
+
+<br>
+
+```{r}
+#| eval: true
+#| echo: true
+html %>% html_elements(".important")
+```
+
+<br>
+
+```{r}
+#| eval: true
+#| echo: true
+html %>% html_elements("#first")
+```
+
+
+## Ekstraksi Data
+
+```{r}
+#| eval: true
+#| echo: true
+html <- minimal_html("
+  <ol>
+    <li>apple &amp; pear</li>
+    <li>banana</li>
+    <li>pineapple</li>
+  </ol>
+")
+html %>% 
+  html_elements("li") %>% 
+  html_text2()
+```
+
+<br>
+
+```{r}
+#| eval: true
+#| echo: true
+html <- minimal_html("<body>
+  <p>
+  This is
+  a
+  paragraph.</p><p>This is another paragraph.
+  
+  It has two sentences.</p>
+")
+html %>% 
+  html_element("body") %>% 
+  html_text() %>% 
+  cat()
+```
+
+## Atribut
+
+<br>
+
+Contoh atribut yang digunakan sebagai informasi destinasi suatu alamat dan gambar.
+
+```{r}
+#| eval: true
+#| echo: true
+html <- minimal_html("
+  <p><a href='https://en.wikipedia.org/wiki/Cat'>cats</a></p>
+  <img src='https://cataas.com/cat' width='100' height='200'>
+")
+html %>% 
+  html_elements("a") %>% 
+  html_attr("href")
+html %>% 
+  html_elements("img") %>% 
+  html_attr("src")
+```
+
+
+## Tabel
+
+```{r}
+#| eval: true
+#| echo: true
+html <- minimal_html("
+  <table>
+    <tr>
+      <th>x</th>
+      <th>y</th>
+    </tr>
+    <tr>
+      <td>1.5</td>
+      <td>2.7</td>
+    </tr>
+    <tr>
+      <td>4.9</td>
+      <td>1.3</td>
+    </tr>
+    <tr>
+      <td>7.2</td>
+      <td>8.1</td>
+    </tr>
+  </table>
+  ")
+html %>% 
+  html_node("table") %>% 
+  html_table()
+```
+
+## `html_element` vs `html_elements`
+
+```{r}
+#| eval: true
+#| echo: true
+html <- minimal_html("
+  <ul>
+    <li><b>C-3PO</b> is a <i>droid</i> that weighs <span class='weight'>167 kg</span></li>
+    <li><b>R2-D2</b> is a <i>droid</i> that weighs <span class='weight'>96 kg</span></li>
+    <li><b>Yoda</b> weighs <span class='weight'>66 kg</span></li>
+    <li><b>R4-P17</b> is a <i>droid</i></li>
+  </ul>
+  ")
+```
+
+```{r}
+#| eval: true
+#| echo: true
+html %>% html_elements("b") %>% html_text2()
+```
+<br>
+
+```{r}
+#| eval: true
+#| echo: true
+characters <- html %>% html_elements("li")
+characters %>% html_element("b") %>% html_text2()
+```
+<br>
+
+```{r}
+#| eval: true
+#| echo: true
+data.frame(
+  name = characters %>% html_element("b") %>% html_text2(),
+  species = characters %>% html_element("i") %>% html_text2(),
+  weight = characters %>% html_element(".weight") %>% html_text2()
+)
+```
+
+
+## GitHub Actions
+
+<br>
+
+GitHub Actions adalah platform CI/CD (continuous integration and continuous delivery) yang memungkinkan pengguna mengotomatisasi pengembangan tools dengan membuat suatu `workflow`.
+
+GitHub Actions menyediakan mesin virtual Linux, Windows, dan MacOS untuk mengeksekusi workflow tersebut.
+
+![](https://docs.github.com/assets/cb-25535/mw-1440/images/help/actions/overview-actions-simple.webp)
+
+::: footer
+[GitHub Actions](https://docs.github.com/en/actions/quickstart)
+:::
+
+
+## YAML
+
+```{[yml]}
+name: Daily Scraping Covid
+
+on:
+  schedule:
+    - cron: '*/7 * * * *'  # every 7 minutes
+
+
+jobs:
+  covid-scrape:
+    runs-on: macos-latest
+    env:
+      ATLAS_URL: ${{ secrets.ATLAS_URL }}
+      ATLAS_COLLECTION: ${{ secrets.ATLAS_COLLECTION }}
+      ATLAS_DB: ${{ secrets.ATLAS_DB }}
+    steps:
+      - name: Start time
+        run: echo "$(date) ** $(TZ=Asia/Jakarta date)"
+      - uses: actions/checkout@v3
+      - uses: r-lib/actions/setup-r@v2
+      - name: Install mongolite package
+        run: Rscript -e 'install.packages("mongolite", dependencies = TRUE)'
+      - name: Install rvest package
+        run: Rscript -e 'install.packages("rvest", dependencies = TRUE)'        
+      - name: Scrape data 
+        run: Rscript scrape.R
+```
+
+## `rvest` & `mongolite`
+
+```{r}
+#| eval: false
+#| echo: true
+library(rvest)
+library(mongolite)
+
+url <- "https://www.worldometers.info/coronavirus/country/indonesia/"
+html <- read_html(url)
+count <- html_text(html_nodes(html, ".maincounter-number"), trim=T)
+
+atlas <- mongo(
+  collection = Sys.getenv("ATLAS_COLLECTION"),
+  db         = Sys.getenv("ATLAS_DB"),
+  url        = Sys.getenv("ATLAS_URL")
+)
+
+newcovid <- data.frame(no = atlas$count() + 1, cases = count[1], deaths = count[2], recovered = count[3])
+atlas$insert(newcovid)
+
+atlas$disconnect()
+```
+
+
+::: footer
+[Mongo Covid](https://github.com/sta1562/mongo-covid/)
+:::
+
+
+## Langkah Membangun Scraping Bot {.scrollable}
+
+::: {style="font-size: 0.7em;"}
+* Pada GitHub, buat repositori projek
+* Clone projek tersebut menjadi sesi projek baru pada RStudio
+* Membuat sintaks R untuk proses scraping dan storing data ke MongoDB Atlas
+* Membuat sintaks YAML untuk proses penjadwalan otomatis pada GitHub Actions
+* Push seluruh script yang dibutuhkan 
+* Pada Database Deployment Atlas, pilih menu [*Connect* - *Driver*], copy string koneksi berikut
+
+![](assets/img/atlas-conn.png){fig-align="center"}
+
+* Kembali ke GitHub, Aktifkan Action permissions pada menu [*Actions* - *General* - *Allow all actions and reusable workflows*]
+* Buat respository secret yang baru pada menu *Actions secrets and variabels*, dan isi dengan string yang sudah dipersiapkan sebelumnya untuk nama koleksi, database, dan Atlas URL
+
+![](assets/img/action.png){fig-align="center" width=1000}
+
+* Periksa secara berkala workflow yang sudah dibangun
+
+![](assets/img/workflow.png){fig-align="center" width=1000}
+
+* Buat status badge
+
+![](assets/img/badge.png){fig-align="center" width=1000}
+
+* Sematkan di dalam README.md projek untuk menampilkan status otomatisasi scraping bot yang sudah aktif
+
+![](assets/img/badge2.png){fig-align="center" width=500}
+
+* DONE
+
+:::
+
+## Tugas Akhir Praktikum MDS Sesi UAS 
+
+<br>
+
+* Membuat scraping bot terjadwal pada situs web yang sudah dipilih sebelumnya menggunakan `rvest` dan GitHub Actions
+* Menyimpan hasil scraping tersebut disimpan ke dalam MongoDB Cloud Atlas
+* Membuat narasi tentang tugas yang dikerjakan pada akun GitHub
+* (Opsional) Visualisasi hasil dalam bentuk tabel, grafik, laporan di [RPubs](https://rpubs.com), atau ShinyApps
+* Kriteria penilaian:
+
+    1. Teknik scraping
+    2. Kompleksitas pengerjaan
+    3. (Bonus) Penyajian hasil akhir
+
+* Projek akan dinilai pada hari Jumat,  16 Juni 2023
+
+
+# Pertanyaan? {background="#43464B"}
+

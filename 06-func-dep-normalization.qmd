@@ -17,7 +17,7 @@ format:
     width: 1920
     logo: assets/img/LogoIPBUni.png
     preview-links: auto
-editor: visual
+editor: source
 ---
 
 ## Outline
@@ -283,18 +283,16 @@ dbDisconnect(DB)
 :::
 :::
 
-
 ## ElephantSQL {.scrollable}
 
 <br/>
 
 ::: columns
 ::: {.column width="60%"}
-
 ![](assets/img/esql_details.png)
 :::
-::: {.column width="40%"}
 
+::: {.column width="40%"}
 ```{r}
 #| eval: false
 #| echo: true
@@ -312,7 +310,8 @@ DB <- dbConnect(
 
 ::: {style="font-size: 0.6em;"}
 Proses input data dapat dilakukan dengan dua cara, pertama:
-::: 
+:::
+
 ```{r}
 #| eval: false
 #| echo: true
@@ -325,10 +324,9 @@ dbWriteTable(DB, 'pasien', tbl_pasien,
 
 ::: {style="font-size: 0.6em;"}
 dan kedua:
-::: 
+:::
 
 ![](assets/img/esql_browser.png)
-
 :::
 :::
 
@@ -336,8 +334,7 @@ dan kedua:
 [ElephantSQL API](https://api.elephantsql.com/)
 :::
 
-
-## shinyapps.io 
+## shinyapps.io
 
 <br/>
 

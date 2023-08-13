@@ -17,27 +17,34 @@ format:
     width: 1920
     logo: assets/img/LogoIPBUni.png
     preview-links: auto
-editor: visual
+editor: source
 ---
-
 
 ## Kueri SQL Tingkat Lanjut
 
 <br/>
 
-* Operasi pada nilai `NULL`
-* Kueri bersarang (Kueri di dalam kueri)
-* Kueri bersarang yang berkorelasi
-* Fungsi `EXISTS` dan `NOT EXISTS `
-* EXPLICIT SETS
-* Mengubah nama atribut
-* Joined relations 
+-   Operasi pada nilai `NULL`
 
-    * CROSS JOIN, MULTIWAY JOIN, NATURAL JOIN, LEFT JOIN, RIGHT JOIN, dan sebagainya
+-   Kueri bersarang (Kueri di dalam kueri)
 
-* Fungsi agregat
-* Pengelompokan
-* Klausa `HAVING` 
+-   Kueri bersarang yang berkorelasi
+
+-   Fungsi `EXISTS` dan `NOT EXISTS`
+
+-   EXPLICIT SETS
+
+-   Mengubah nama atribut
+
+-   Joined relations
+
+    -   CROSS JOIN, MULTIWAY JOIN, NATURAL JOIN, LEFT JOIN, RIGHT JOIN, dan sebagainya
+
+-   Fungsi agregat
+
+-   Pengelompokan
+
+-   Klausa `HAVING`
 
 ## Operasi pada nilai NULL
 
@@ -46,7 +53,6 @@ editor: visual
 ::: {style="font-size: 0.8em;"}
 Menampilkan `nama`, `alamat` dan `umur` dari tabel `pasien` dimana `umur` bernilai `NULL`
 :::
-
 
 ```{sql}
 #| eval: false
@@ -96,7 +102,6 @@ rs <- dbGetQuery(DB, q)
 rmarkdown::paged_table(rs)
 ```
 :::
-
 
 ## Kueri bersarang (kueri di dalam kueri)
 
@@ -151,11 +156,11 @@ rmarkdown::paged_table(dbFetch(rs))
 dbClearResult(rs)
 ```
 
-##
+## 
 
 <br/>
 
-Menampilkan `nama_dokter`, `spesialis`, dan `upah` dengan kondisi `umur` di atas 40 tahun dan `upah` > 6500000
+Menampilkan `nama_dokter`, `spesialis`, dan `upah` dengan kondisi `umur` di atas 40 tahun dan `upah` \> 6500000
 
 ```{sql}
 #| eval: false
@@ -194,7 +199,7 @@ dbClearResult(rs)
 
 ## Kueri bersarang yang berkorelasi
 
-> Kondisi dimana klausa `WHERE` pada kueri bersarang berpadanan/mewakili  beberapa atribut dari relasi yang dideklarasikan pada kueri terluarnya (*outer*) sehingga dua kueri ini dikatakan berkorelasi
+> Kondisi dimana klausa `WHERE` pada kueri bersarang berpadanan/mewakili beberapa atribut dari relasi yang dideklarasikan pada kueri terluarnya (*outer*) sehingga dua kueri ini dikatakan berkorelasi
 
 <br/>
 
@@ -233,12 +238,11 @@ rmarkdown::paged_table(dbFetch(rs))
 dbClearResult(rs)
 ```
 
-## Fungsi EXISTS dan NOT EXISTS 
+## Fungsi EXISTS dan NOT EXISTS
 
 <br/>
 
 Menampilkan `id_pasien` dan namanya yang masuk ke instalasi rawat inap dengan kelas `kamar=VVIP`
-
 
 ```{sql}
 #| eval: false
@@ -279,12 +283,11 @@ rmarkdown::paged_table(dbFetch(rs))
 dbClearResult(rs)
 ```
 
-##
+## 
 
 <br/>
 
 Ruangan yang kosong (belum diisi oleh pasien) yang disajikan dengan `id_kamar` dan `kelas`
-
 
 ```{sql}
 #| eval: false
@@ -296,7 +299,6 @@ WHERE NOT EXISTS (
     WHERE kp.id_kamar=k.id_kamar
   );
 ```
-
 
 <br/>
 
@@ -321,7 +323,6 @@ rmarkdown::paged_table(dbFetch(rs))
 #| results: hide
 dbClearResult(rs)
 ```
-
 
 ## EXPLICIT SETS
 
@@ -374,7 +375,6 @@ SELECT d.nama_dokter AS "nama praktisi", spesialis AS "spesialisasi kedokteran"
   WHERE umur_dokter = 45;
 ```
 
-
 <br/>
 
 . . .
@@ -409,7 +409,6 @@ SELECT * FROM dokter AS d CROSS JOIN pasien AS P
   WHERE d.umur_dokter = p.umur;
 ```
 
-
 <br/>
 
 . . .
@@ -434,8 +433,7 @@ dbClearResult(rs)
 
 <br/>
 
-Menampilkan `nama` dan `usia` pasien yang dirawat di `kamar` VVIP dan berusia > 17.
-
+Menampilkan `nama` dan `usia` pasien yang dirawat di `kamar` VVIP dan berusia \> 17.
 
 ```{sql}
 #| eval: false
@@ -447,7 +445,6 @@ SELECT p.nama, p.umur, k.kelas
     AND k.kelas = 'VVIP' 
     AND p.umur>17;
 ```
-
 
 <br/>
 
@@ -510,7 +507,7 @@ rmarkdown::paged_table(dbFetch(rs))
 dbClearResult(rs)
 ```
 
-## NATURAL JOIN 
+## NATURAL JOIN
 
 <br/>
 
@@ -551,7 +548,6 @@ dbClearResult(rs)
 
 Menampilkan jumlah `dokter`, total `upah`, `upah` tertinggi, `upah` terendah, dan rata-rata `upah` dari `dokter`
 
-
 ```{sql}
 #| eval: false
 #| echo: true
@@ -587,7 +583,7 @@ rmarkdown::paged_table(dbFetch(rs))
 dbClearResult(rs)
 ```
 
-##
+## 
 
 <br/>
 
@@ -630,7 +626,7 @@ rmarkdown::paged_table(dbFetch(rs))
 dbClearResult(rs)
 ```
 
-##
+## 
 
 <br/>
 
@@ -670,7 +666,6 @@ dbClearResult(rs)
 <br/>
 
 Menghitung total dan rata-rata upah setiap `dokter` spesialis dan mengurutkannya secara menurun
-
 
 ```{sql}
 #| eval: false
@@ -740,12 +735,11 @@ rmarkdown::paged_table(dbFetch(rs))
 dbClearResult(rs)
 ```
 
-## Klausa `HAVING` 
+## Klausa `HAVING`
 
 <br/>
 
 Mencari `dokter` spesialis yang menangani lebih dari satu `pasien` dan diurutkan berdasarkan jumlah `pasien` secara menurun
-
 
 ```{sql}
 #| eval: false
@@ -787,7 +781,6 @@ dbClearResult(rs)
 <br/>
 
 Mencari jumlah pasien berdasarkan poli dimana `pasien` belum memiliki keluarga dan mengurutkannya dari yang paling banyak ke paling sedikit.
-
 
 ```{sql}
 #| eval: false

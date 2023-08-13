@@ -1,0 +1,501 @@
+---
+title: "`mongolite`:<br>MongoDB Client for R"
+block-headings: TRUE
+author: "<br/><br/><br/>Alfa Nugraha Pradana"
+institute: "Prodi Statistika dan Sains Data IPB University"
+footer: "[rpubs.com/alfanugraha/sta1562-p13](https://rpubs.com/alfanugraha/sta1562-p13)&nbsp;&nbsp;&nbsp;"
+format: 
+  revealjs:
+    theme: [default, style.scss]
+    slide-number: c/t
+    code-copy: true
+    # center-title-slide: false
+    code-overflow: wrap
+    highlight-style: a11y
+    height: 1080
+    width: 1920
+    logo: assets/img/LogoIPBUni.png
+    preview-links: auto
+editor: source
+---
+
+## Outline
+
+<br/>
+
+- Aggregation Operations
+
+    * Aggregation Pipeline
+    * Map-Reduce
+
+- `mongolite`
+
+- R + Atlas + Twitter Apps
+
+- GitHub Actions
+
+# Aggregation Operations {background="#43464B"}
+
+## Aggregation Operations
+
+<br> 
+
+Operasi aggregation adalah sebuah operasi dimana kumpulan dokumen pada koleksi diproses dengan satu atau beberapa perintah di dalam suatu *stages* atau tahapan tertentu sehingga dapat mengeluarkan hasil olah data yang dibutuhkan. Beberapa kegunaan operasi ini:
+
+  - Mengelompokkan nilai dari beberapa dokumen
+  - Melakukan operasi pada suatu kelompok data agar menghasilkan nilai tunggal seperti nilai total, dan sebagainya
+  - Menganalisis perubahan data dari waktu ke waktu
+
+
+. . .
+
+Cara Untuk menggunakan operasi aggregation:
+
+- [Aggregation Pipelines](https://www.mongodb.com/docs/manual/aggregation/#std-label-aggregation-pipeline-intro)
+- [Single purpose aggregation methods](https://www.mongodb.com/docs/manual/aggregation/#std-label-single-purpose-agg-methods)
+
+
+## Aggregation Pipeline
+
+<br>
+
+- Suatu Aggregation Pipeline terdiri dari satu atau lebih *stages* dalam memproses dokumen
+- Setiap tahapan dapat berupa operasi misalnya seleksi dokumen, pengelompokan dokumen, dan menghitung nilai tertentu dari dokumen tersebut seperti nilai total, rata-rata, nilai maksimum, dan minimum
+- Perintah yang digunakan `db.<collection>.aggregate()`
+
+<br>
+
+. . .
+
+![](assets/img/pipeline.png){fig-align="center" width="1500"}
+
+## Aggregation Pipeline Stages
+
+<br>
+
+Beberapa perintah *stages* yang biasa digunakan:
+
++---------------+-------------------------------------------------------------------------+
+| Operator      | Keterangan                                                              |
++===============+=========================================================================+
+| `$match`      | Memilih dokumen yang sesuai dengan kriteria yang diinginkan             | 
++---------------+-------------------------------------------------------------------------+
+| `$group`      | Mengelompokan dokumen berdasarkan identifier expression yang diberikan  |
++---------------+-------------------------------------------------------------------------+
+| `$project`    | Membentuk kembali dokumen, seperti menambahkan field baru dan lainnya   | 
++---------------+-------------------------------------------------------------------------+
+| `$sort`       | Mengurutkan dokumen berdasarkan key yang diberikan                      |
++---------------+-------------------------------------------------------------------------+
+| `$count`      | Menghitung jumlah dokumennakan text                                     |
++---------------+-------------------------------------------------------------------------+
+| `$limit`      | Memilih `n` dokumen pertama untuk digunakan pada pipline                |
++---------------+-------------------------------------------------------------------------+
+| `$skip`       | Melewatkan n dokumen pertama dan sisa dokumen lainnya digunakan         |
++---------------+-------------------------------------------------------------------------+
+| `$lookup`     | Melakukan left outer join kepada koleksi lain pada database yang sama   |
++---------------+-------------------------------------------------------------------------+
+| `$out`        | Mengubah dokumen output dari aggregation pipeline menjadi koleksi       |  
++---------------+-------------------------------------------------------------------------+
+
+::: footer
+[Aggregation Pipeline Stages](https://www.mongodb.com/docs/manual/reference/operator/aggregation-pipeline/)
+:::
+
+
+## Stage 1: `$match`
+
+<br>
+
+```{{json}}
+db.cities.aggregate([
+  { $match : {  continent: {$in: ["Asia", "Africa"]} }}
+])
+```
+
+```{r}
+#| eval: true
+#| echo: false
+library(mongolite)
+collection <- "cities"
+db <- "prak12"
+url <- "mongodb://localhost:27017/"
+cities <- mongo(collection=collection, db=db, url=url)
+cities$aggregate('[{"$match": {  "continent": {"$in": ["Asia", "Africa"]} }}]')
+```
+
+## Stage 2: `$sort`
+
+<br>
+
+```{{json}}
+db.cities.aggregate([ 
+  {$match : {  continent: {$in: ["Asia", "Africa"]} }},
+  {$sort: { population: -1  }}
+])
+```
+
+```{r}
+#| eval: true
+#| echo: false
+cities$aggregate('[{"$match": {  "continent": {"$in": ["Asia", "Africa"]} }},
+  {"$sort": { "population": -1  }}]')
+```
+
+## `$group` & `$sort`
+
+<br>
+
+```{{json}}
+db.cities.aggregate([ 
+  {$group: {
+      _id: {"continent": "$continent"},
+      total_population: {$sum: "$population"}
+    }
+  },
+  {$sort: {total_population: -1 }}
+])
+```
+
+```{r}
+#| eval: true
+#| echo: false
+cities$aggregate('[
+  {"$group": {
+      "_id": {"continent": "$continent"},
+      "total_population": {"$sum": "$population"}
+    }
+  },
+  { "$sort": {"total_population": -1 }}
+]')
+```
+
+
+## `$project`
+
+```{{json}}
+db.cities.aggregate([{
+    $project: {
+      "_id": 0,
+      "location": { "country": "$country", "continent": "$continent" },
+      "name": "$name",
+      "population": "$population"
+    }
+}])
+```
+
+```{r}
+#| eval: true
+#| echo: false
+cities$aggregate('[{
+    "$project": {
+      "_id": 0,
+      "lokasi": { "negara": "$country", "benua": "$continent" },
+      "kota": "$name",
+      "populasi": "$population"
+    }
+}]')
+```
+
+## Menyatukan semua *stages* {.scrollable}
+
+```{{json}}
+db.cities.aggregate([
+  { $match: { "continent": { $in: ["North America", "Asia"] }} },
+  { $sort: { "population": -1 }},
+  {
+      $group: {
+        "_id": { "continent": "$continent", "country": "$country" },
+        "first_city": { $first: "$name" },
+        "highest_population": { $max: "$population" }
+      }
+  },
+  { $match: { "highest_population": { $gt: 20.0 }}},
+  { $sort: { "highest_population": -1 }},
+  {
+    $project: {
+      "_id": 0,
+      "location": { "country": "$_id.country", "continent": "$_id.continent" },
+      "most_populated_city": { "name": "$first_city", "population": "$highest_population"}
+    }
+  }
+])
+```
+
+
+```{r}
+#| eval: true
+#| echo: false
+cities$aggregate('[
+  { "$match": { "continent": { "$in": ["North America", "Asia"] }} },
+  { "$sort": { "population": -1 }},
+  {
+    "$group": {
+      "_id": { "continent": "$continent", "country": "$country" },
+      "first_city": { "$first": "$name" },
+      "highest_population": { "$max": "$population" }
+    }
+  },
+  { "$match": { "highest_population": { "$gt": 20.0 }}},
+  { "$sort": { "highest_population": -1 }},
+  {
+    "$project": {
+      "_id": 0,
+      "lokasi": { "negara": "$_id.country", "benua": "$_id.continent" },
+      "kota_terpadat": { "nama_kota": "$first_city", "populasi": "$highest_population"}
+    }
+  }                 
+]')
+```
+
+## Single Purpose Aggregation Methods
+
+- Melakukan agregasi beberapa dokumen dalam satu collection
+- Sederhana tetapi tidak memiliki kemampuan seperti Aggregation Pipeline
+
+. . .
+
+Contoh single purpose aggregation method :
+
+::: {style="font-size: 0.7em;"}
++---------------------------------------------+-----------------------------------------------------------------------+
+| Perintah                                    | Keterangan                                                            |
++=============================================+=======================================================================+
+| `db.<collection>.estimatedDocumentCount()`  | Menghasilkan perkiraan jumlah dokumen pada suatu koleksi              |
++---------------------------------------------+-----------------------------------------------------------------------+
+| `db.<collection>.count()`                   | Menghasilkan jumlah dokumen pada suatu koleksi                        |
++---------------------------------------------+-----------------------------------------------------------------------+
+| `db.<collection>.distinct()`                | Menghasilkan nilai unik dari kolom spesifik dalam array               |
++---------------------------------------------+-----------------------------------------------------------------------+
+:::
+
+
+## Map-Reduce
+
+![](https://www.mongodb.com/docs/manual/images/map-reduce.bakedsvg.svg){fig-align="center" width="1000"}
+
+
+
+## Map-Reduce
+
+<br>
+
+- Mulai dari versi 5.0, fitur ini sudah tidak digunakan kembali
+- Aggregation Pipeline dianggap memberikan kinerja dan penggunaan yang lebih baik
+- Operasi Map-Reduce saat ini dapat disubstitusi dengan *aggregation pipeline stages* seperti `$group`, `$merge`, dan lainnya
+- Untuk kustomisasi fungsi Map-Reduce dapat menggunakan operator aggregation `$accumulator` dan `$function`
+
+. . .
+
+Berbagai contoh alternatif penggunaan Aggregation Pipeline sebagai pengganti dari Map-Reduce dapat dipelajari pada laman berikut:
+
+- [Map-Reduce to Aggregation Pipeline](https://www.mongodb.com/docs/manual/reference/map-reduce-to-aggregation-pipeline/)
+- [Map-Reduce Examples](https://www.mongodb.com/docs/manual/tutorial/map-reduce-examples/)
+
+
+## `mongolite`
+
+<br>
+
+
+```{r}
+#| eval: true
+#| echo: true
+library(mongolite)
+
+# nama koleksi
+collection <- "cities"
+
+# nama database
+db <- "prak12"
+
+# koneksi ke mongoDB
+url <- "mongodb://localhost:27017/"
+
+cities <- mongo(collection=collection, db=db, url=url)
+```
+
+Perintah `find()`
+
+```{r}
+#| eval: true
+#| echo: true
+cities$find()
+```
+
+::: footer
+[mongolite documentation](https://jeroen.github.io/mongolite/)
+:::
+
+## 
+
+Perintah `aggregate()`
+
+```{r}
+#| eval: true
+#| echo: true
+cities$aggregate('[{"$match": {  "continent": {"$in": ["Asia", "Africa"]} }}]')
+```
+
+
+## 
+
+Perintah `aggregate()` dengan menggunakan beberapa *stages*
+
+```{r}
+#| eval: true
+#| echo: true
+cities$aggregate('[
+  { "$match": { "continent": { "$in": ["North America", "Asia"] }} },
+  { "$sort": { "population": -1 }},
+  {
+    "$group": {
+      "_id": { "continent": "$continent", "country": "$country" },
+      "first_city": { "$first": "$name" },
+      "highest_population": { "$max": "$population" }
+    }
+  },
+  { "$match": { "highest_population": { "$gt": 20.0 }}},
+  { "$sort": { "highest_population": -1 }},
+  {
+    "$project": {
+      "_id": 0,
+      "lokasi": { "negara": "$_id.country", "benua": "$_id.continent" },
+      "kota_terpadat": { "nama_kota": "$first_city", "populasi": "$highest_population"}
+    }
+  }                 
+]')
+```
+
+## R + Atlas + Twitter Apps
+
+<br>
+
+Menggunakan paket `mongolite` & `rtweet`
+
+```{r}
+library(mongolite)
+library(rtweet)
+```
+
+
+<br>
+
+Membangun koneksi ke Atlas 
+
+```{r}
+#| eval: false
+#| echo: true
+onepiece_conn <- mongo(
+  collection = Sys.getenv("ATLAS_CLOUD_COLLECTION"),
+  db         = Sys.getenv("ATLAS_CLOUD_DB"), 
+  url        = Sys.getenv("ATLAS_CLOUD_URL")
+)
+```
+
+
+<br>
+
+Menggunakan Twitter API untuk koneksi ke aplikasi robot 
+
+```{r}
+#| eval: false
+#| echo: true
+token <- create_token(
+  app = Sys.getenv("TWITTER_APPS"),
+  consumer_key    = Sys.getenv("TWITTER_CONSUMER_API_KEY"),
+  consumer_secret = Sys.getenv("TWITTER_CONSUMER_API_SECRET"),
+  access_token    = Sys.getenv("TWITTER_ACCESS_TOKEN"),
+  access_secret   = Sys.getenv("TWITTER_ACCESS_TOKEN_SECRET")
+)
+```
+
+
+## Contoh Aplikasi Bot {.scrollable}
+
+Membangun koneksi ke MongoDB dan mengatur pesan Twitter
+
+```{r}
+#| eval: false
+#| echo: true
+library(rtweet)
+library(mongolite)
+
+collection <- "cities"
+db <- "prak12"
+url <- "mongodb://localhost:27017/"
+cities <- mongo(
+  collection=collection, 
+  db=db, 
+  url=url
+)
+
+# menyimpan data dari mongoDB ke dataframe
+kota <- cities$find()
+
+## membuat hash tag
+hashtag <- c("MDS","mongoDB","populasi")
+
+## pesan twitter
+status_details <- paste0(
+  "Populasi kota ", kota$name[1], " di ", kota$country[1], " adalah ", kota$population[1], " juta jiwa",  
+  "\n\n",
+  paste0("#", hashtag, collapse = " ")
+)
+```
+
+<br>
+
+Membuat token dan posting twitter (1)
+
+```{r}
+#| eval: false
+#| echo: true
+## set twitter token
+## cara 1
+token <- create_token(
+  app = "onepieceMD",
+  consumer_key = Sys.getenv("TWITTER_CONSUMER_API_KEY"),
+  consumer_secret = Sys.getenv("TWITTER_CONSUMER_API_SECRET"),
+  access_token = Sys.getenv("TWITTER_ACCESS_TOKEN"),
+  access_secret = Sys.getenv("TWITTER_ACCESS_TOKEN_SECRET")
+)
+
+## posting
+post_tweet(
+  status = status_details,
+  token = token
+)
+```
+
+<br>
+
+Membuat token dan posting twitter (2)
+
+```{r}
+#| eval: false
+#| echo: true
+## cara 2
+auth <- rtweet_app()
+auth_save(auth, "twitter-auth")
+
+bot <- rtweet_bot(
+  api_key = Sys.getenv("TWITTER_CONSUMER_API_KEY"),
+  api_secret = Sys.getenv("TWITTER_CONSUMER_API_SECRET"),
+  access_token = Sys.getenv("TWITTER_ACCESS_TOKEN"),
+  access_secret = Sys.getenv("TWITTER_ACCESS_TOKEN_SECRET")
+)
+
+## posting
+post_tweet(
+  status = status_details,
+  token = bot
+)
+```
+
+
+##  GitHub Actions
+
+![](assets/img/git-action.png){fig-align="center" width="1000"}
+
+
+# Pertanyaan? {background="#43464B"}

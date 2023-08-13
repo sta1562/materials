@@ -1,0 +1,363 @@
+---
+title: "MongoDB Atlas:<br>The Developer Data Platform"
+block-headings: TRUE
+author: "<br/><br/><br/>Alfa Nugraha Pradana"
+institute: "Prodi Statistika dan Sains Data IPB University"
+footer: "[rpubs.com/alfanugraha/sta1562-p12](https://rpubs.com/alfanugraha/sta1562-p12)&nbsp;&nbsp;&nbsp;"
+format: 
+  revealjs:
+    theme: [default, style.scss]
+    slide-number: c/t
+    code-copy: true
+    # center-title-slide: false
+    code-overflow: wrap
+    highlight-style: a11y
+    height: 1080
+    width: 1920
+    logo: assets/img/LogoIPBUni.png
+    preview-links: auto
+editor: source
+---
+
+## Outline
+
+<br/>
+
+- Insert, Update, Delete Documents
+
+- Query
+
+- Atlas
+
+- Twitter for Developer
+
+- GitHub Actions
+
+## `insertMany()`
+
+Membuat koleksi `cities`
+
+```{{json}}
+db.createCollection('cities')
+```
+
+<br>
+
+Bulk insert
+
+```{{json}}
+db.cities.insertMany([
+    {"name": "Seoul", "country": "South Korea", "continent": "Asia", "population": 25.674 },
+    {"name": "Mumbai", "country": "India", "continent": "Asia", "population": 19.980 },
+    {"name": "Lagos", "country": "Nigeria", "continent": "Africa", "population": 13.463 },
+    {"name": "Beijing", "country": "China", "continent": "Asia", "population": 19.618 },
+    {"name": "Shanghai", "country": "China", "continent": "Asia", "population": 25.582 },
+    {"name": "Osaka", "country": "Japan", "continent": "Asia", "population": 19.281 },
+    {"name": "Cairo", "country": "Egypt", "continent": "Africa", "population": 20.076 },
+    {"name": "Tokyo", "country": "Japan", "continent": "Asia", "population": 37.400 },
+    {"name": "Karachi", "country": "Pakistan", "continent": "Asia", "population": 15.400 },
+    {"name": "Dhaka", "country": "Bangladesh", "continent": "Asia", "population": 19.578 },
+    {"name": "Rio de Janeiro", "country": "Brazil", "continent": "South America", "population": 13.293 },
+    {"name": "São Paulo", "country": "Brazil", "continent": "South America", "population": 21.650 },
+    {"name": "Mexico City", "country": "Mexico", "continent": "North America", "population": 21.581 },
+    {"name": "Delhi", "country": "India", "continent": "Asia", "population": 28.514 },
+    {"name": "Buenos Aires", "country": "Argentina", "continent": "South America", "population": 14.967 },
+    {"name": "Kolkata", "country": "India", "continent": "Asia", "population": 14.681 },
+    {"name": "New York", "country": "United States", "continent": "North America", "population": 18.819 },
+    {"name": "Manila", "country": "Philippines", "continent": "Asia", "population": 13.482 },
+    {"name": "Chongqing", "country": "China", "continent": "Asia", "population": 14.838 },
+    {"name": "Istanbul", "country": "Turkey", "continent": "Europe", "population": 14.751 }
+])
+```
+
+## Insert, Update, Delete Documents
+
+<br>
+
+Membuat dokumen baru ke dalam koleksi MongoDB
+
+```{{json}}
+db.cities.insertOne({'_id' : 1, 'name':'Jakarta', 'country': 'Indonesia', 'continent': 'Asia', 'population': 10.56})
+```
+
+
+<br>
+
+Mengupdate dokumen 
+
+```{{json}}
+db.cities.updateOne({'_id' : 1}, { $set: {'name':'Bandung', 'population': 2.5}})
+```
+
+
+<br>
+
+Menghapus dokumen
+
+```{{json}}
+db.cities.deleteOne({'_id':1})
+```
+
+
+## Comparison Query Operators {.scrollable}
+
+<br>
+
+Beberapa contoh operator yang bisa digunakan:
+
+- `$gt` : 
+
+```{{json}}
+db.cities.find({ population: { $gt: 25 } })
+```
+
+- `$lt` : 
+
+```{{json}}
+db.cities.find({ population: { $lt: 14 } })
+```
+
+- `$in` : 
+
+```{{json}}
+db.cities.find({ continent: { $in: ["Asia", "Africa"] }, population: {$lt: 15  } })
+```
+
+
+<br>
+
++-----------+-------------------------------------------------------------------------+
+| Operator  | Keterangan                                                              |
++===========+=========================================================================+
+| `$eq`	    | Membandingkan nilai yang sama dengan nilai lainnya.                     | 
++-----------+-------------------------------------------------------------------------+
+| `$ne`	    | Membandingkan nilai yang tidak sama dengan nilai lainnya.               |
++-----------+-------------------------------------------------------------------------+
+| `$gt`     | Membandingkan nilai yang lebih besar dari nilai lainnya.                | 
++-----------+-------------------------------------------------------------------------+
+| `$gte`    | Membandingkan nilai yang lebih besar atau sama dengan nilai lainnya.    |
++-----------+-------------------------------------------------------------------------+
+| `$lt`     | Membandingkan nilai yang lebih kecil dari nilai lainnya.                |
++-----------+-------------------------------------------------------------------------+
+| `$lte`    | Membandingkan nilai yang lebih kecil atau sama dengan nilai lainnya     |  
++-----------+-------------------------------------------------------------------------+
+| `$in`	    | Membandingkan nilai dengan nilai yang ada di array.                     |
++-----------+-------------------------------------------------------------------------+
+| `$nin`    | Membandingkan nilai yang tidak ada dalam nilai yang ada di array.       |
++-----------+-------------------------------------------------------------------------+
+
+<br>
+
+## Logical Query Operators {.scrollable}
+
+<br>
+
+Beberapa contoh operator yang bisa digunakan:
+
+- `$and` : 
+
+```{{json}}
+db.cities.find({ 
+  $and: [{
+    continent: { $in: ["South America", "North America"] },
+    population: { $gt: 20 }
+  }]
+})
+```
+
+- `$not` : 
+
+```{{json}}
+db.cities.find({ 
+  continent: {
+    $not : { $in: ["Asia", "South America", "North America"]  }
+  }
+})
+```
+
+<br>
+
++-----------+-------------------------------------------------------------------------+
+| Operator  | Keterangan                                                              |
++===========+=========================================================================+
+| `$and`    | Menggabungkan query dengan operasi AND                                  | 
++-----------+-------------------------------------------------------------------------+
+| `$or`	    | Menggabungkan query dengan operasi OR                                   |
++-----------+-------------------------------------------------------------------------+
+| `$nor`    | Menggabungkan query dengan operasi NOR                                  | 
++-----------+-------------------------------------------------------------------------+
+| `$not`    | Membalikkan kondisi, mengembalikan documen yang tidak sesuai kondisi    |
++-----------+-------------------------------------------------------------------------+
+
+<br>
+
+
+## Element Query Operators {.scrollable}
+
+<br>
+
+- `$exists` : 
+
+```{{json}}
+db.cities.find({ 
+  continent: {
+    $exists : false
+  }
+})
+```
+
+
+- `$type` : 
+
+```{{json}}
+db.cities.find({ 
+  population: {$type: ['double']  }
+})
+```
+
+<br>
+
++-----------+-------------------------------------------------------------------------+
+| Operator  | Keterangan                                                              |
++===========+=========================================================================+
+| `$exists` | Mencocokkan dokumen yang memiliki field tersebut                        | 
++-----------+-------------------------------------------------------------------------+
+| `$type`   | Mencocokkan dokumen yang memiliki type field tersebut                   |
++-----------+-------------------------------------------------------------------------+
+
+<br>
+
+## Evaluation Query Operators {.scrollable}
+
+<br>
+
+- `$expr` : 
+
+```{{json}}
+db.cities.find({ 
+  $expr : {
+    $gt : ["population", 25]  
+  }
+})
+```
+
+<br>
+
++---------------+-------------------------------------------------------------------------+
+| Operator      | Keterangan                                                              |
++===============+=========================================================================+
+| `$expr`       | Menggunakan aggregation operation                                       | 
++---------------+-------------------------------------------------------------------------+
+| `$jsonSchema` | Validasi document sesuai dengan JSON schema                             |
++---------------+-------------------------------------------------------------------------+
+| `$mod`        | Melakukan operasi modulo                                                | 
++---------------+-------------------------------------------------------------------------+
+| `$regex`      | Mengambil document sesuai dengan regular expression (PCRE)              |
++---------------+-------------------------------------------------------------------------+
+| `$text`       | Melakukan pencarian menggunakan text                                    |
++---------------+-------------------------------------------------------------------------+
+| `$where`      | Mengambil document dengan JavaScript Function                           |
++---------------+-------------------------------------------------------------------------+
+
+<br>
+
+
+## Query Modifier Function {.scrollable}
+
+<br>
+
+- `count()` : 
+
+```{{json}}
+db.cities.find({}).count()
+```
+
+<br>
+
+```{{json}}
+db.cities.find({continent: "Asia"}).count()
+```
+
+
+<br>
+
++---------------+-------------------------------------------------------------------------+
+| Fungsi        | Keterangan                                                              |
++===============+=========================================================================+
+| `count()`     | Mengambil jumlah data hasil query                                       | 
++---------------+-------------------------------------------------------------------------+
+| `limit(size)` | Membatasi jumlah data yang didapat dari query                           |
++---------------+-------------------------------------------------------------------------+
+| `skip(size)`  | Menghiraukan data pertama hasil query sejumlah yang ditentukan          | 
++---------------+-------------------------------------------------------------------------+
+| `sort(query)` | Mengurutkan hasil data query                                            |
++---------------+-------------------------------------------------------------------------+
+
+<br>
+
+
+## Atlas
+
+> Teknologi multi-cloud MongoDB sebagai platform pengembang data 
+
+<br>
+
+Atlas tidak hanya bekerja sebagai DaaS (Database as a Service) pada umumnya. Atlas adalah sebuah platform lengkap bagi data developer. Berikut ini ada keunggulan dan fitur dari Atlas:
+
+::: columns
+::: {.column .fragment width="50%"}
+-   Backups with point-in-time restore
+-   Online Archive
+-   Operational insights
+-   CLI and administration API
+:::
+
+::: {.column .fragment width="50%"}
+-   Atlas Search
+-   Atlas Device Sync
+-   Atlas Data Lake
+-   Atlas Data Federation
+-   Atlas Chart
+-   Atlas App Services
+:::
+:::
+
+## Setting up
+
+
+1.  Register **MongoDB Atlas**:
+
+    <https://www.mongodb.com/cloud/atlas/register>
+
+2.  Deploy Atlas Cluster
+
+3.  Pengaturan user database dan alamat IP agar dapat diakses
+
+4.  Penggunaan Atlas Data Explorer
+
+
+## Atlas Cluster Dashboard
+
+![](assets/img/atlas-home.png){fig-align="center" width="1000"}
+
+## Mengakses Atlas
+
+![](assets/img/atlas-access.png){fig-align="center" width="1000"}
+
+## Atlas Database
+
+![](assets/img/atlas-db.png){fig-align="center" width="1000"}
+
+
+
+## Twitter for Developer
+
+![](assets/img/twitdev.png){fig-align="center" width="1000"}
+
+
+## GitHub Actions
+
+
+![](assets/img/git-action.png){fig-align="center" width="1000"}
+
+# Pertanyaan? {background="#43464B"}

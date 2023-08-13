@@ -1,0 +1,182 @@
+---
+title: "MongoDB Compass:<br>The Official GUI for MongoDB"
+block-headings: TRUE
+author: "<br/><br/><br/>Alfa Nugraha Pradana"
+institute: "Prodi Statistika dan Sains Data IPB University"
+footer: "[rpubs.com/alfanugraha/sta1562-p11](https://rpubs.com/alfanugraha/sta1562-p11)&nbsp;&nbsp;&nbsp;"
+format: 
+  revealjs:
+    theme: [default, style.scss]
+    slide-number: c/t
+    code-copy: true
+    # center-title-slide: false
+    code-overflow: wrap
+    highlight-style: a11y
+    height: 1080
+    width: 1920
+    logo: assets/img/LogoIPBUni.png
+    preview-links: auto
+editor: source
+---
+
+
+
+## Apa itu Compass
+
+> Sebuah antarmuka grafis yang dibangun dan digunakan untuk MongoDB
+
+<br>
+
+Semua skema analisis untuk optimisasi pengindeksan dokumen dan *aggregation pipeline* dilakukan pada satu lingkungan platform terpusat.
+
+Compass dibangun dengan berbagai fitur yang dapat digunakan untuk mengelola data dengan mudah dan sederhana. Beberapa fitur Compass:
+
+::: columns
+::: {.column .fragment width="50%"}
+-   C.R.U.D
+-   Aggregation Builder
+-   View Management
+-   Schema Analyzer
+-   Indexes
+:::
+
+::: {.column .fragment width="50%"}
+-   Explain Plan
+-   Validation
+-   Performance Monitoring
+-   Import/Export
+-   Integrated MongoDB Shell
+:::
+:::
+
+## Pengaturan Lingkungan Pengembangan Compass
+
+<br>
+
+1.  Install **MongoDB Community Server**:
+
+    <https://www.mongodb.com/try/download/community>
+
+2.  Register **MongoDB Atlas**:
+
+    <https://www.mongodb.com/cloud/atlas/register>
+
+3.  Pada **Atlas**, pergi ke menu *Deployment* dan pilih *Databases*
+
+4.  Pilih *Connect*
+
+5.  Pilih *Connect using MongoDB Compass* dan copy alamat koneksi tersebut
+
+## Compass GUI
+
+![](assets/img/compass.png){fig-align="center" width="1000"}
+
+## Data Contoh
+
+<br>
+
+- [MongoDB Sample Dataset](https://github.com/neelabalan/mongodb-sample-dataset) di Github
+- [Inside Airbnb](http://insideairbnb.com/get-the-data/), detail data Airbnb di seluruh negara di dunia 
+- [MongoDB Atlas - Load Sample Data](https://www.mongodb.com/docs/atlas/sample-data/), digunakan saat memuat data pada **Atlas**
+
+
+## Perintah Dasar
+ 
+<br>
+
+```{{bash}}
+use test
+```
+
+Membuat database dengan nama `test`. Jika database sudah memiliki koleksi ada maka database `test` akan aktif jika belum memilki koleksi database tersebut dalam posisi aktif tetapi tidak akan tersimpan jika belum diisi koleksi
+
+
+<br>
+
+```{{bash}}
+show dbs / databases
+```
+
+Menampilkan seluruh database yang telah memiliki koleksi yang ada pada MongoDB Client/Server  
+
+
+<br>
+
+```{{bash}}
+db.createCollection('users')
+```
+
+Membuat koleksi dengan nama `users`
+
+<br>
+
+```{{bash}}
+show collections
+```
+
+Menampilkan koleksi yang ada pada database aktif
+
+## Perintah Dasar {.scrollable}
+
+<br>
+
+### Method pada Database
+
+::: {style="font-size: 0.7em;"}
++--------------------+----------------------------------------------------------+
+| Perintah           | Keterangan                                               |
++====================+==========================================================+
+| `db.dropDatabase()`| Menghapus database                                       |
++--------------------+----------------------------------------------------------+
+| `db.getName()`     | Menampilkan nama database                                |
++--------------------+----------------------------------------------------------+
+| `db.hostInfo`      | Menampilkan informasi host MongoDB                       |
++--------------------+----------------------------------------------------------+
+| `db.version()`     | Menampilkan versi database                               |
++--------------------+----------------------------------------------------------+
+| `db.stats()`       | Menampilkan statistik penggunaan database                |
++--------------------+----------------------------------------------------------+
+:::
+
+<br>
+
+### Method pada Database Collection
+
+::: {style="font-size: 0.7em;"}
++-------------------------------+----------------------------------------------------------+
+| Perintah                      | Keterangan                                               |
++===============================+==========================================================+
+| `db.getCollectionNames()`     | Menampilkan semua nama collection                        |
++-------------------------------+----------------------------------------------------------+
+| `db.createCollection(name)`   | Membuat collection baru                                  |
++-------------------------------+----------------------------------------------------------+
+| `db.getCollection(name)`      | Mendapatkan object collection                            |
++-------------------------------+----------------------------------------------------------+
+| `db.<name>`                   | Sama dengan db.getCollection(name)                       |
++-------------------------------+----------------------------------------------------------+
+| `db.getCollectionInfos()`     | Menampilkan informasi semua collection                   |
++-------------------------------+----------------------------------------------------------+
+:::
+
+<br>
+
+### Method pada Collection
+
+::: {style="font-size: 0.7em;"}
++-------------------------------+----------------------------------------------------------+
+| Perintah                      | Keterangan                                               |
++===============================+==========================================================+
+| `db.<collection>.find()`      | Menampilkan dokumen dengan kondisi tertentu              |
++-------------------------------+----------------------------------------------------------+
+| `db.<collection>.count()`     | Menghitung jumlah koleksi                                |
++-------------------------------+----------------------------------------------------------+
+| `db.<collection>.drop()`      | Menghapus koleksi                                        |
++-------------------------------+----------------------------------------------------------+
+| `db.<collection>.totalSize()` | Menampilkan total ukuran koleksi                         |
++-------------------------------+----------------------------------------------------------+
+| `db.<collection>.stats()`     | Menampilkan statistik koleksi                            |
++-------------------------------+----------------------------------------------------------+
+:::
+
+
+# Pertanyaan? {background="#43464B"}
